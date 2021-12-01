@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+
+# for linting/language server
+gem 'rubocop'
+gem 'reek'
+
+gem 'rspec'
