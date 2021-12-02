@@ -2005,7 +2005,7 @@ INPUT = '
 10526
 '.freeze
 
-solution = Solution.new
+solution = Day1.new
 
 puts 'Solution for Day 1:'
 puts format('---> Part 1: %s', solution.solve_first(INPUT))

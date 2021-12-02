@@ -1,7 +1,5 @@
 # Solution for day 1 of Advent of Code 2021
-# frozen_string_literal: true
-
-class Solution
+class Day1
   def solve_first(input)
     values = parse_input(input)
     count_larger_measurements(values)
