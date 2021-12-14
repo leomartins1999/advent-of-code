@@ -19,7 +19,7 @@ class Day13
 
     folded = lines.reduce(points) { |acc, line| @folder.fold(acc, line) }
 
-    print_number(folded)
+    # print_number(folded)
 
     nil
   end
