@@ -3,13 +3,19 @@
  */
 package com.github.leomartins1999
 
-class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
-}
+import com.github.leomartins1999.day1.Day1
+import java.io.File
 
 fun main() {
-    println(App().greeting)
+    // day 1
+    val day1 = Day1()
+    val day1Input = getFileText("./input/day-1.txt")
+
+    val day1Part1 = day1.part1(day1Input)
+    val day1Part2 = day1.part2(day1Input)
+
+    println("Day 1 (Part 1): $day1Part1")
+    println("Day 1 (Part 2): $day1Part2")
 }
+
+private fun getFileText(path: String) = File(path).readText()
