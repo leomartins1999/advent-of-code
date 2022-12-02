@@ -1,6 +1,6 @@
 package com.github.leomartins1999.day2
 
-import java.lang.IllegalStateException
+import java.lang.IllegalArgumentException
 
 class Day2 {
 
@@ -27,27 +27,27 @@ class Day2 {
         "A", "X" -> Play.Rock
         "B", "Y" -> Play.Paper
         "C", "Z" -> Play.Scissors
-        else -> throw IllegalStateException("Unknown play $this!")
+        else -> throw IllegalArgumentException("Unknown play $this!")
     }
 
     private fun String.toOutcome() = when(this) {
         "X" -> Outcome.Lose
         "Y" -> Outcome.Draw
         "Z" -> Outcome.Win
-        else -> throw IllegalStateException("Unknown outcome $this!")
+        else -> throw IllegalArgumentException("Unknown outcome $this!")
     }
 
-    private fun Round.getPart1Points() = getOutcomePoints() + myPlay.points
+    private fun Round.getPart1Points() = getOutcome().points + myPlay.points
 
-    private fun Round.getOutcomePoints() = when {
-        oponentPlay == myPlay -> 3
-        myPlay.beats(oponentPlay) -> 6
-        else -> 0
+    private fun Round.getOutcome() = when {
+        oponentPlay == myPlay -> Outcome.Draw
+        oponentPlay.beats(myPlay) -> Outcome.Lose
+        else -> Outcome.Win
     }
 
-    private fun Round.getPart2Points() = outcome.points + playForOutcome(outcome).points
+    private fun Round.getPart2Points() = outcome.points + getPlayForOutcome(outcome).points
 
-    private fun Round.playForOutcome(outcome: Outcome) = when (outcome) {
+    private fun Round.getPlayForOutcome(outcome: Outcome) = when (outcome) {
         Outcome.Draw -> oponentPlay
         Outcome.Win -> oponentPlay.getBeatedBy()
         Outcome.Lose -> oponentPlay.getBeats()
@@ -64,10 +64,7 @@ class Day2 {
     ) {
         Rock(1), Paper(2), Scissors(3);
 
-        fun beats(otherPlay: Play) =
-            (this == Rock && otherPlay == Scissors)
-            || (this == Paper && otherPlay == Rock)
-            || (this == Scissors && otherPlay == Paper)
+        fun beats(otherPlay: Play) = this.getBeatedBy() == otherPlay
 
         fun getBeatedBy() = when (this) {
             Rock -> Paper
