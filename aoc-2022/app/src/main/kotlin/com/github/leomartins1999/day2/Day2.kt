@@ -64,7 +64,7 @@ class Day2 {
     ) {
         Rock(1), Paper(2), Scissors(3);
 
-        fun beats(otherPlay: Play) = this.getBeatedBy() == otherPlay
+        fun beats(otherPlay: Play) = getBeats() == otherPlay
 
         fun getBeatedBy() = when (this) {
             Rock -> Paper
