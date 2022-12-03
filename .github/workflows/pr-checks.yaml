@@ -1,0 +1,22 @@
+name: PR checks
+
+on: pull_request
+
+jobs:
+  aoc-2022:
+    name: AoC 2022
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aoc-2022
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+      - name: Run KTLint
+        run: ./gradlew ktlintCheck
+      - name: Run tests
+        run: ./gradlew test -i
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: "**/build/test-results/test/*.xml"

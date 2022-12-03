@@ -15,17 +15,16 @@ class Day3Tests {
     """.trimIndent()
 
     @Test
-    fun part1(){
+    fun part1() {
         val result = Day3().part1(input)
 
         assertEquals(157, result)
     }
 
     @Test
-    fun part2(){
+    fun part2() {
         val result = Day3().part2(input)
 
         assertEquals(70, result)
     }
-
 }

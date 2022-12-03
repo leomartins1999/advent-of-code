@@ -39,5 +39,4 @@ class Day1 : Day {
 
         return elfCalories
     }
-
 }

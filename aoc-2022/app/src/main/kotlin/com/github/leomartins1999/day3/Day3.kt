@@ -42,5 +42,4 @@ class Day3 : Day {
             .reduce { acc, chars -> acc intersect chars }
             .first()
             .getPriority()
-
 }

@@ -85,5 +85,4 @@ class Day2 : Day {
     ) {
         Win(6), Draw(3), Lose(0)
     }
-
 }
