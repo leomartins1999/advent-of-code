@@ -1,10 +1,12 @@
 package com.github.leomartins1999.day3
 
-class Day3 {
+import com.github.leomartins1999.Day
 
-    fun part1(input: String) = parseInput(input).sumOf { it.getRucksackPriority() }
+class Day3 : Day {
 
-    fun part2(input: String) = parseInput(input)
+    override fun part1(input: String) = parseInput(input).sumOf { it.getRucksackPriority() }
+
+    override fun part2(input: String) = parseInput(input)
         .chunked(3)
         .sumOf { it.getBadgePriority() }
 

@@ -1,12 +1,13 @@
 package com.github.leomartins1999.day2
 
+import com.github.leomartins1999.Day
 import java.lang.IllegalArgumentException
 
-class Day2 {
+class Day2 : Day {
 
-    fun part1(input: String) = parseInput(input).sumOf { it.getPart1Points() }
+    override fun part1(input: String) = parseInput(input).sumOf { it.getPart1Points() }
 
-    fun part2(input: String) = parseInput(input).sumOf { it.getPart2Points() }
+    override fun part2(input: String) = parseInput(input).sumOf { it.getPart2Points() }
 
     private fun parseInput(input: String) =
         input
@@ -23,14 +24,14 @@ class Day2 {
             outcome = this[1].toOutcome()
         )
 
-    private fun String.toPlay() = when(this) {
+    private fun String.toPlay() = when (this) {
         "A", "X" -> Play.Rock
         "B", "Y" -> Play.Paper
         "C", "Z" -> Play.Scissors
         else -> throw IllegalArgumentException("Unknown play $this!")
     }
 
-    private fun String.toOutcome() = when(this) {
+    private fun String.toOutcome() = when (this) {
         "X" -> Outcome.Lose
         "Y" -> Outcome.Draw
         "Z" -> Outcome.Win
