@@ -3,51 +3,30 @@
  */
 package com.github.leomartins1999
 
-import com.github.leomartins1999.day1.Day1
-import com.github.leomartins1999.day2.Day2
-import com.github.leomartins1999.day3.Day3
 import java.io.File
 
+private const val BASE_PACKAGE = "com.github.leomartins1999"
+
 fun main() {
-    day1()
-    day2()
-    day3()
+    runDay(1)
+    runDay(2)
+    runDay(3)
 }
 
-private fun day1() {
-    val day = Day1()
-    val dayInput = getFileText("./input/day-1.txt")
+private fun runDay(number: Int) {
+    val day = Class.forName("$BASE_PACKAGE.day$number.Day$number")
+        .constructors
+        .first()
+        .newInstance() as Day
 
-    val part1 = day.part1(dayInput)
-    val part2 = day.part2(dayInput)
+    val input = getFileText("./input/day-$number.txt")
 
-    println("#".repeat(25))
-    println("Day 1 (Part 1): $part1")
-    println("Day 1 (Part 2): $part2")
-}
+    val part1 = day.part1(input)
+    val part2 = day.part2(input)
 
-private fun day2() {
-    val day = Day2()
-    val dayInput = getFileText("./input/day-2.txt")
-
-    val part1 = day.part1(dayInput)
-    val part2 = day.part2(dayInput)
-
-    println("#".repeat(25))
-    println("Day 2 (Part 1): $part1")
-    println("Day 2 (Part 2): $part2")
-}
-
-private fun day3() {
-    val day = Day3()
-    val dayInput = getFileText("./input/day-3.txt")
-
-    val part1 = day.part1(dayInput)
-    val part2 = day.part2(dayInput)
-
-    println("#".repeat(25))
-    println("Day 3 (Part 1): $part1")
-    println("Day 3 (Part 2): $part2")
+    println("##### Day $number ######")
+    println("Day $number (Part 1): $part1")
+    println("Day $number (Part 2): $part2")
 }
 
 private fun getFileText(path: String) = File(path).readText()

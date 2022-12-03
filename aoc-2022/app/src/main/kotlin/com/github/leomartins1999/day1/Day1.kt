@@ -1,14 +1,16 @@
 package com.github.leomartins1999.day1
 
-class Day1 {
+import com.github.leomartins1999.Day
 
-    fun part1(input: String): Int {
+class Day1 : Day {
+
+    override fun part1(input: String): Int {
         val elfCalories = parseInput(input)
 
         return elfCalories.maxOf { it.sum() }
     }
 
-    fun part2(input: String): Int {
+    override fun part2(input: String): Int {
         val elfCalories = parseInput(input)
 
         return elfCalories
