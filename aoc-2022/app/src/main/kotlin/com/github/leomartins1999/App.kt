@@ -12,6 +12,7 @@ fun main() {
     runDay(2)
     runDay(3)
     runDay(4)
+    runDay(5)
 }
 
 private fun runDay(number: Int) {
