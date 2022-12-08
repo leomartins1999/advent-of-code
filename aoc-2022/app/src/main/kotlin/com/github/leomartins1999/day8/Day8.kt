@@ -19,15 +19,15 @@ class Day8 : Day {
         return lines.map { l -> l.map { c -> c.digitToInt() } }
     }
 
-    private fun Forest.countVisibleTrees() = countOuterTrees() + countInnerTrees()
-
-    private fun Forest.countOuterTrees() = (getXLength() * 2) + ((getYLength() - 2) * 2)
-
-    private fun Forest.countInnerTrees() = (1 until getXLength() - 1)
-        .flatMap { x -> (1 until getYLength() - 1).map { y -> Pair(x, y) } }
+    private fun Forest.countVisibleTrees() = (0 until getXLength())
+        .flatMap { x -> (0 until getYLength()).map { y -> Pair(x, y) } }
         .count { (x, y) -> isTreeVisible(x, y) }
 
-    private fun Forest.isTreeVisible(x: Int, y: Int) = getSurroundingTrees(x, y).any { it.max() < this[x][y] }
+    private fun Forest.isTreeVisible(x: Int, y: Int) = getSurroundingTrees(x, y).any { trees ->
+        val max = trees.maxOrNull() ?: return true
+
+        max < getHeight(x, y)
+    }
 
     private fun Forest.getBestScenicScore(): Int {
         var max = -1
@@ -72,4 +72,6 @@ class Day8 : Day {
 
     private fun Forest.getXLength() = first().size
     private fun Forest.getYLength() = size
+
+    private fun Forest.getHeight(x: Int, y: Int) = this[y][x]
 }
