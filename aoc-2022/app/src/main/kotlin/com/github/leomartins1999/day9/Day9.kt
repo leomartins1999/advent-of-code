@@ -2,10 +2,12 @@ package com.github.leomartins1999.day9
 
 import com.github.leomartins1999.Day
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 class Day9 : Day {
 
     override fun part1(input: String) = parseInput(input).simulateMoves()
+    override fun part2(input: String) = parseInput(input).simulateMoves(knots = 10)
 
     private fun parseInput(input: String) = input
         .split("\n")
@@ -16,8 +18,8 @@ class Day9 : Day {
         .filter { it.isNotBlank() }
         .let { Move(direction = it[0], steps = it[1].toInt()) }
 
-    private fun List<Move>.simulateMoves() =
-        fold(State()) { state, move ->
+    private fun List<Move>.simulateMoves(knots: Int = 2) =
+        fold(State(knots = knots)) { state, move ->
             (0 until move.steps)
                 .fold(state) { partialState, _ -> move(partialState, move.direction) }
         }
@@ -35,24 +37,37 @@ class Day9 : Day {
             }
         }
 
-        val newTail =
-            if (tail closeTo newHead) tail
-            else head
+        val newTails = buildTails(tails, head, newHead)
 
-        val newVisitedPositions = visitedPositions.toMutableSet() + newTail
+        val newVisitedPositions = visitedPositions.toMutableSet() + newTails.last()
 
-        State(head = newHead, tail = newTail, visitedPositions = newVisitedPositions)
+        copy(head = newHead, tails = newTails, visitedPositions = newVisitedPositions)
     }
+
+    private fun buildTails(tails: List<Position>, oldFirstHead: Position, newFirstHead: Position) =
+        tails.foldIndexed(mutableListOf<Position>()) { idx, acc, tail ->
+            val oldHead = if (idx == 0) oldFirstHead else tails[idx - 1]
+            val newHead = if (idx == 0) newFirstHead else acc[idx - 1]
+            val newTail = if (tail closeTo newHead) tail else tail.follow(newHead)
+            acc += newTail
+            acc
+        }
+
+    private fun Position.follow(other: Position) = copy(x = x + (other.x - x).sign, y = y + (other.y - y).sign)
 
     private data class Move(val direction: String, val steps: Int)
 
     private data class Position(val x: Int, val y: Int) {
         infix fun closeTo(other: Position) = (x - other.x).absoluteValue <= 1 && (y - other.y).absoluteValue <= 1
+
+        operator fun plus(other: Position) = Position(x = x + other.x, y = y + other.y)
+        operator fun minus(other: Position) = Position(x = x - other.x, y = y - other.y)
     }
 
     private data class State(
         val head: Position = Position(x = 0, y = 0),
-        val tail: Position = head,
+        val knots: Int = 2,
+        val tails: List<Position> = List(knots - 1) { head },
         val visitedPositions: Set<Position> = emptySet()
     )
 }
