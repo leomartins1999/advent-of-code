@@ -29,7 +29,7 @@ class Day9 : Day {
     private fun move(state: State, direction: String) = with(state) {
         val newHead = buildNewHead(head, direction)
         val newTails = buildTails(tails, newHead)
-        val newVisitedPositions = visitedPositions.toMutableSet() + newTails.last()
+        val newVisitedPositions = visitedPositions + newTails.last()
 
         copy(head = newHead, tails = newTails, visitedPositions = newVisitedPositions)
     }
