@@ -27,41 +27,40 @@ class Day9 : Day {
             .size
 
     private fun move(state: State, direction: String) = with(state) {
-        val newHead = with(head) {
-            when (direction) {
-                "U" -> copy(y = y + 1)
-                "D" -> copy(y = y - 1)
-                "R" -> copy(x = x + 1)
-                "L" -> copy(x = x - 1)
-                else -> throw IllegalArgumentException("Unknown direction $direction!")
-            }
-        }
-
-        val newTails = buildTails(tails, head, newHead)
-
+        val newHead = buildNewHead(head, direction)
+        val newTails = buildTails(tails, newHead)
         val newVisitedPositions = visitedPositions.toMutableSet() + newTails.last()
 
         copy(head = newHead, tails = newTails, visitedPositions = newVisitedPositions)
     }
 
-    private fun buildTails(tails: List<Position>, oldFirstHead: Position, newFirstHead: Position) =
-        tails.foldIndexed(mutableListOf<Position>()) { idx, acc, tail ->
-            val oldHead = if (idx == 0) oldFirstHead else tails[idx - 1]
+    private fun buildNewHead(head: Position, direction: String) = with(head) {
+        when (direction) {
+            "U" -> copy(y = y + 1)
+            "D" -> copy(y = y - 1)
+            "R" -> copy(x = x + 1)
+            "L" -> copy(x = x - 1)
+            else -> throw IllegalArgumentException("Unknown direction $direction!")
+        }
+    }
+
+    private fun buildTails(tails: List<Position>, newFirstHead: Position): List<Position> =
+        tails.foldIndexed(emptyList()) { idx, acc, tail ->
             val newHead = if (idx == 0) newFirstHead else acc[idx - 1]
             val newTail = if (tail closeTo newHead) tail else tail.follow(newHead)
-            acc += newTail
-            acc
+
+            acc + newTail
         }
 
-    private fun Position.follow(other: Position) = copy(x = x + (other.x - x).sign, y = y + (other.y - y).sign)
+    private fun Position.follow(other: Position) = copy(
+        x = x + (other.x - x).sign,
+        y = y + (other.y - y).sign
+    )
 
     private data class Move(val direction: String, val steps: Int)
 
     private data class Position(val x: Int, val y: Int) {
         infix fun closeTo(other: Position) = (x - other.x).absoluteValue <= 1 && (y - other.y).absoluteValue <= 1
-
-        operator fun plus(other: Position) = Position(x = x + other.x, y = y + other.y)
-        operator fun minus(other: Position) = Position(x = x - other.x, y = y - other.y)
     }
 
     private data class State(
