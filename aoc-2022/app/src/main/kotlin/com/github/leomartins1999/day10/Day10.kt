@@ -98,5 +98,4 @@ class Day10 : Day {
             }
         }
     }
-
 }

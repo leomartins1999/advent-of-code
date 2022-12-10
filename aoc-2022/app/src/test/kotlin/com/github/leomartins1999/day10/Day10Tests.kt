@@ -177,5 +177,4 @@ class Day10Tests {
             result
         )
     }
-
 }
