@@ -17,6 +17,7 @@ fun main() {
     runDay(7)
     runDay(8)
     runDay(9)
+    runDay(10)
 }
 
 private fun runDay(number: Int) {
@@ -31,8 +32,8 @@ private fun runDay(number: Int) {
     val part2 = day.part2(input)
 
     println("##### Day $number ######")
-    println("Day $number (Part 1): $part1")
-    println("Day $number (Part 2): $part2")
+    println("Day $number (Part 1): \n$part1")
+    println("Day $number (Part 2): \n$part2")
 }
 
 private fun getFileText(path: String) = File(path).readText()
