@@ -48,7 +48,7 @@ class Day10 : Day {
             val x = (clock - 1) % panelWidth
             val y = (clock - 1) / panelWidth
 
-            if (x in register - 1..register + 1) litPixels += Pixel(x, y)
+            if (x in (register - 1..register + 1)) litPixels += Pixel(x, y)
         }
 
         litPixels.forEach { (x, y) -> panel[y][x] = "#" }
@@ -76,6 +76,7 @@ class Day10 : Day {
         var inProgress: InProgressInstruction? = null
 
         for (clock in 1..240) {
+            // before
             if (inProgress == null) {
                 val instruction = poll()
 
