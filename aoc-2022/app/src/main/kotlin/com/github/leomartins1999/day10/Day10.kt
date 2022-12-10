@@ -3,22 +3,64 @@ package com.github.leomartins1999.day10
 import com.github.leomartins1999.Day
 import java.util.ArrayDeque
 
+private typealias InstructionStack = ArrayDeque<Instruction>
+private typealias ClockTick = Int
+private typealias RegisterValue = Int
+private typealias SignalStrengthSample = Pair<ClockTick, RegisterValue>
+
+private typealias OnTick = (ClockTick, RegisterValue) -> Unit
+
+private data class Instruction(
+    val verb: String,
+    val value: Int?
+)
+
+private data class InProgressInstruction(
+    val completionClock: ClockTick,
+    val onComplete: () -> Unit
+)
+
 class Day10 : Day {
 
-    override fun part1(input: String) = parseInput(input)
-        .run()
-        .first
+    override fun part1(input: String): Int {
+        val instructions = parseInput(input)
 
-    override fun part2(input: String) = parseInput(input)
-        .run()
-        .second
-        .buildOutput()
+        val samples = mutableListOf<SignalStrengthSample>()
+        val samplingStops = setOf(20, 60, 100, 140, 180, 220)
+
+        instructions.run { clock, register ->
+            if (clock in samplingStops) samples += SignalStrengthSample(clock, register)
+        }
+
+        return samples.sumOf { (clock, register) -> clock * register }
+    }
+
+    override fun part2(input: String): String {
+        data class Pixel(val x: Int, val y: Int)
+
+        val instructions = parseInput(input)
+
+        val litPixels = mutableListOf<Pixel>()
+        val (panelWidth, panelHeight) = Pair(40, 6)
+        val panel = MutableList(panelHeight) { MutableList(panelWidth) { "." } }
+
+        instructions.run { clock, register ->
+            val x = (clock - 1) % panelWidth
+            val y = (clock - 1) / panelWidth
+
+            if (x in register - 1..register + 1) litPixels += Pixel(x, y)
+        }
+
+        litPixels.forEach { (x, y) -> panel[y][x] = "#" }
+
+        return panel.joinToString(separator = "\n") { it.joinToString(separator = "") }
+    }
 
     private fun parseInput(input: String) = input
         .split("\n")
         .filter { it.isNotBlank() }
         .map { it.toInstruction() }
-        .let { ArrayDeque(it) }
+        .let { InstructionStack(it) }
 
     private fun String.toInstruction() = split(" ")
         .filter { it.isNotBlank() }
@@ -29,64 +71,32 @@ class Day10 : Day {
             )
         }
 
-    private fun ArrayDeque<Instruction>.run(): Pair<Int, Set<Pair<Int, Int>>> {
+    private fun InstructionStack.run(onTick: OnTick = { _, _ -> }) {
         var register = 1
-        var executing: Pair<Int, Int>? = null
-        val samples = mutableMapOf<Int, Int>()
-        val output = mutableSetOf<Pair<Int, Int>>()
+        var inProgress: InProgressInstruction? = null
 
-        for (i in 1..240) {
-            if (executing == null) {
-                poll()?.let {
-                    when (it.verb) {
-                        "addx" -> executing = Pair(i + 1, it.value!!)
+        for (clock in 1..240) {
+            if (inProgress == null) {
+                val instruction = poll()
+
+                when {
+                    instruction == null -> {}
+                    instruction.verb == "noop" -> {}
+                    instruction.verb == "addx" -> {
+                        inProgress = InProgressInstruction(clock + 1) { register += instruction.value!! }
                     }
                 }
             }
 
             // during
-            if (i in samplingStops) {
-                samples[i] = register
-            }
-
-            val position = (i - 1) % 40
-            if (position in (register - 1..register + 1)) {
-                output += Pair(position, (i - 1) / 40)
-            }
+            onTick(clock, register)
 
             // after
-            if (executing?.first == i) {
-                register += executing!!.second
-                executing = null
+            if (inProgress?.completionClock == clock) {
+                inProgress.onComplete()
+                inProgress = null
             }
         }
-
-        val signalStrength = samples
-            .map { it.value * it.key }
-            .sum()
-
-        return Pair(signalStrength, output)
-    }
-
-    private fun Set<Pair<Int, Int>>.buildOutput() =
-        (0 until 6)
-            .map { y ->
-                (0 until 40)
-                    .map { x ->
-                        if (contains(Pair(x, y))) "#"
-                        else "."
-                    }
-            }
-            .map { it.joinToString(separator = "") }
-            .joinToString(separator = "\n")
-
-    private data class Instruction(
-        val verb: String,
-        val value: Int?
-    )
-
-    private companion object {
-        val samplingStops = setOf(20, 60, 100, 140, 180, 220)
     }
 
 }
