@@ -3,14 +3,26 @@ package com.github.leomartins1999.day11
 import com.github.leomartins1999.Day
 
 private typealias MonkeyId = Int
-private typealias Item = Int
-private typealias WorryLevel = Int
-private typealias ItemInspection = (WorryLevel) -> WorryLevel
-private typealias ItemTest = (WorryLevel) -> Boolean
+private typealias ItemWorryLevel = Long
+private typealias ItemInspection = (ItemWorryLevel) -> ItemWorryLevel
+private typealias ItemTest = (ItemWorryLevel) -> Boolean
+private typealias ItemRelief = (ItemWorryLevel) -> ItemWorryLevel
 
 class Day11 : Day {
 
-    override fun part1(input: String) = input.parse().getMonkeyBusinessLevel(20)
+    override fun part1(input: String) = input
+        .parse()
+        .getMonkeyBusinessLevel(20) { it / 3 }
+
+    override fun part2(input: String): Long {
+        val monkeys = input.parse()
+        val lmc = monkeys
+            .map { it.testDivisor }
+            .distinct()
+            .fold(1L) { acc, div -> acc * div }
+
+        return monkeys.getMonkeyBusinessLevel(10000) { it % lmc }
+    }
 
     private fun String.parse(): List<Monkey> {
         val lines = this
@@ -35,14 +47,13 @@ class Day11 : Day {
 
         val items = this[1].removePrefix("Starting items: ")
             .split(", ")
-            .map(String::toInt)
+            .map(String::toLong)
             .toMutableList()
 
         val inspection = this[2].buildInspection()
 
-        val test = this[3].removePrefix("Test: divisible by ")
-            .toInt()
-            .let { { worryLevel: WorryLevel -> worryLevel % it == 0 } }
+        val testDivisor = this[3].removePrefix("Test: divisible by ")
+            .toLong()
 
         val recipients = Pair(
             this[4].removePrefix("If true: throw to monkey ").toInt(),
@@ -53,7 +64,7 @@ class Day11 : Day {
             id = id,
             items = items,
             inspection = inspection,
-            test = test,
+            testDivisor = testDivisor,
             recipients = recipients
         )
     }
@@ -62,13 +73,14 @@ class Day11 : Day {
         val tokens = this.removePrefix("Operation: new = old ")
             .split(" ")
 
-        val operation: (Int, Int) -> Int = when (val operStr = tokens[0]) {
-            "*" -> Int::times
-            "+" -> Int::plus
-            else -> throw IllegalArgumentException("Unknown operation $operStr ($this)!")
-        }
+        val operation: (ItemWorryLevel, ItemWorryLevel) -> ItemWorryLevel =
+            when (val operStr = tokens[0]) {
+                "*" -> Long::times
+                "+" -> Long::plus
+                else -> throw IllegalArgumentException("Unknown operation $operStr ($this)!")
+            }
 
-        val arg = tokens[1].toIntOrNull()
+        val arg = tokens[1].toLongOrNull()
 
         return { old ->
             if (arg == null) operation(old, old)
@@ -76,22 +88,22 @@ class Day11 : Day {
         }
     }
 
-    private fun List<Monkey>.getMonkeyBusinessLevel(roundCnt: Int) = this
-        .apply { simulateRounds(roundCnt) }
+    private fun List<Monkey>.getMonkeyBusinessLevel(roundCnt: Int, relief: ItemRelief) = this
+        .apply { simulateRounds(roundCnt, relief) }
         .map { it.itemsInspected }
         .sortedDescending()
         .subList(0, 2)
-        .fold(1) { acc, v -> acc * v }
+        .fold(1L) { acc, v -> acc * v }
 
-    private fun List<Monkey>.simulateRounds(roundCnt: Int) {
+    private fun List<Monkey>.simulateRounds(roundCnt: Int, relief: ItemRelief) {
         repeat(roundCnt) { _ ->
             this.forEach { monkey ->
                 monkey.items.forEach { item ->
                     val newWorry = monkey.inspection(item)
-                    val worryWithRelief = newWorry / 3
+                    val worryWithRelief = relief(newWorry)
 
                     val recipient =
-                        if (monkey.test(worryWithRelief)) monkey.recipients.first
+                        if (worryWithRelief % monkey.testDivisor == 0L) monkey.recipients.first
                         else monkey.recipients.second
 
                     this[recipient].items += worryWithRelief
@@ -105,9 +117,9 @@ class Day11 : Day {
 
     private data class Monkey(
         val id: MonkeyId,
-        val items: MutableList<Item>,
+        val items: MutableList<ItemWorryLevel>,
         val inspection: ItemInspection,
-        val test: ItemTest,
+        val testDivisor: Long,
         val recipients: Pair<MonkeyId, MonkeyId>,
         var itemsInspected: Int = 0
     )
