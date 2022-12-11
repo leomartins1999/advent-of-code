@@ -5,7 +5,6 @@ import com.github.leomartins1999.Day
 private typealias MonkeyId = Int
 private typealias ItemWorryLevel = Long
 private typealias ItemInspection = (ItemWorryLevel) -> ItemWorryLevel
-private typealias ItemTest = (ItemWorryLevel) -> Boolean
 private typealias ItemRelief = (ItemWorryLevel) -> ItemWorryLevel
 
 class Day11 : Day {
@@ -95,23 +94,21 @@ class Day11 : Day {
         .subList(0, 2)
         .fold(1L) { acc, v -> acc * v }
 
-    private fun List<Monkey>.simulateRounds(roundCnt: Int, relief: ItemRelief) {
-        repeat(roundCnt) { _ ->
-            this.forEach { monkey ->
-                monkey.items.forEach { item ->
-                    val newWorry = monkey.inspection(item)
-                    val worryWithRelief = relief(newWorry)
+    private fun List<Monkey>.simulateRounds(roundCnt: Int, relief: ItemRelief) = repeat(roundCnt) { _ ->
+        this.forEach { monkey ->
+            monkey.items.forEach { item ->
+                val newWorry = monkey.inspection(item)
+                val worryWithRelief = relief(newWorry)
 
-                    val recipient =
-                        if (worryWithRelief % monkey.testDivisor == 0L) monkey.recipients.first
-                        else monkey.recipients.second
+                val recipient =
+                    if (worryWithRelief % monkey.testDivisor == 0L) monkey.recipients.first
+                    else monkey.recipients.second
 
-                    this[recipient].items += worryWithRelief
-                    monkey.itemsInspected++
-                }
-
-                monkey.items.removeAll { true }
+                this[recipient].items += worryWithRelief
+                monkey.itemsInspected++
             }
+
+            monkey.items.removeAll { true }
         }
     }
 
