@@ -120,5 +120,4 @@ class Day11 : Day {
         val recipients: Pair<MonkeyId, MonkeyId>,
         var itemsInspected: Int = 0
     )
-
 }

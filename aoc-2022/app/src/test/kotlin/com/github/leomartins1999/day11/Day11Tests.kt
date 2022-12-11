@@ -48,5 +48,4 @@ class Day11Tests {
 
         assertEquals(2713310158, result)
     }
-
 }
