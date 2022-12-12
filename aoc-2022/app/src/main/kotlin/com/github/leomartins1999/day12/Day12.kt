@@ -2,16 +2,17 @@ package com.github.leomartins1999.day12
 
 import com.github.leomartins1999.Day
 
-private typealias HeightMap = List<List<Char>>
+private typealias Height = Char
+private typealias HeightMap = List<List<Height>>
 
 class Day12 : Day {
 
-    override fun part1(input: String) = with(input.parse()) { getFewestSteps() }
+    override fun part1(input: String) = input.parse().getFewestSteps()
 
     override fun part2(input: String) = with(input.parse()) {
-        val positions = height.getPositionsForHeight('a')
-
-        positions.minOfOrNull { pos -> getFewestSteps(pos) }
+        heightMap
+            .getPositionsForHeight('a')
+            .minOfOrNull { pos -> getFewestSteps(pos) }
     }
 
     private fun String.parse(): Map {
@@ -19,38 +20,31 @@ class Day12 : Day {
             .filter { it.isNotBlank() }
             .map { it.toList() }
 
-        val start = map.getPosition('S')
-        val end = map.getPosition('E')
+        val start = map.getPositionsForHeight('S').first()
+        val end = map.getPositionsForHeight('E').first()
 
-        val height = map
+        val heightMap = map
             .replace('S', 'a')
             .replace('E', 'z')
 
         return Map(
             start = start,
             end = end,
-            height = height
+            heightMap = heightMap
         )
     }
 
-    private fun HeightMap.replace(old: Char, new: Char): HeightMap = this
+    private fun HeightMap.replace(old: Height, new: Height) = this
         .map { line -> line.toMutableList() }
         .toMutableList()
         .apply {
-            val (x, y) = getPosition(old)
+            val (x, y) = getPositionsForHeight(old).first()
             this[y][x] = new
         }
         .map { it.toList() }
         .toList()
 
-    private fun HeightMap.getPosition(c: Char): Position {
-        val y = indexOfFirst { c in it }
-        val x = this[y].indexOf(c)
-
-        return Position(x, y)
-    }
-
-    private fun HeightMap.getPositionsForHeight(height: Char) = indices
+    private fun HeightMap.getPositionsForHeight(height: Height) = indices
         .flatMap { y ->
             this[y]
                 .mapIndexed { x, height -> Pair(x, height) }
@@ -61,7 +55,7 @@ class Day12 : Day {
     private data class Map(
         val start: Position,
         val end: Position,
-        val height: HeightMap
+        val heightMap: HeightMap
     ) {
         fun getFewestSteps(initialPosition: Position = start): Int {
             val cost = mutableMapOf(initialPosition to 0)
@@ -87,6 +81,10 @@ class Day12 : Day {
             return cost[end] ?: Int.MAX_VALUE
         }
 
+        private fun getPositionOrNull(x: Int, y: Int) =
+            if (x < 0 || y < 0 || x >= heightMap.first().size || y >= heightMap.size) null
+            else Position(x, y)
+
         private fun Position.getSurroundingNodes() =
             listOfNotNull(
                 getPositionOrNull(x + 1, y),
@@ -100,13 +98,8 @@ class Day12 : Day {
                 positionHeight >= otherHeight - 1
             }
 
-        private fun Position.getHeight() = height[y][x]
-
-        private fun getPositionOrNull(x: Int, y: Int) =
-            if (x < 0 || y < 0 || x >= height.first().size || y >= height.size) null
-            else Position(x, y)
+        private fun Position.getHeight() = heightMap[y][x]
     }
 
     private data class Position(val x: Int, val y: Int)
-
 }

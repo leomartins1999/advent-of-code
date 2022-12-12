@@ -26,5 +26,4 @@ class Day12Tests {
 
         assertEquals(29, result)
     }
-
 }
