@@ -6,9 +6,13 @@ private typealias HeightMap = List<List<Char>>
 
 class Day12 : Day {
 
-    override fun part1(input: String) = input
-        .parse()
-        .getFewestSteps()
+    override fun part1(input: String) = with(input.parse()) { getFewestSteps() }
+
+    override fun part2(input: String) = with(input.parse()) {
+        val positions = height.getPositionsForHeight('a')
+
+        positions.minOfOrNull { pos -> getFewestSteps(pos) }
+    }
 
     private fun String.parse(): Map {
         val map = split("\n")
@@ -46,20 +50,28 @@ class Day12 : Day {
         return Position(x, y)
     }
 
+    private fun HeightMap.getPositionsForHeight(height: Char) = indices
+        .flatMap { y ->
+            this[y]
+                .mapIndexed { x, height -> Pair(x, height) }
+                .filter { (_, h) -> height == h }
+                .map { (x, _) -> Position(x = x, y = y) }
+        }
+
     private data class Map(
         val start: Position,
         val end: Position,
         val height: HeightMap
     ) {
-        fun getFewestSteps(): Int {
-            val cost = mutableMapOf(start to 0)
-            val toVisit = mutableSetOf(start)
+        fun getFewestSteps(initialPosition: Position = start): Int {
+            val cost = mutableMapOf(initialPosition to 0)
+            val toVisit = mutableSetOf(initialPosition)
 
             while (toVisit.isNotEmpty()) {
                 val node = toVisit.first()
                 toVisit.remove(node)
 
-                val nodeCost = cost[node]!!
+                val nodeCost = cost[node] ?: throw IllegalStateException("Cost for node $node not found!")
 
                 val surroundingNodes = node.getSurroundingNodes()
 
@@ -72,7 +84,7 @@ class Day12 : Day {
                 }
             }
 
-            return cost[end] ?: throw IllegalStateException("Didn't found a path to the end")
+            return cost[end] ?: Int.MAX_VALUE
         }
 
         private fun Position.getSurroundingNodes() =
@@ -88,11 +100,11 @@ class Day12 : Day {
                 positionHeight >= otherHeight - 1
             }
 
+        private fun Position.getHeight() = height[y][x]
+
         private fun getPositionOrNull(x: Int, y: Int) =
             if (x < 0 || y < 0 || x >= height.first().size || y >= height.size) null
             else Position(x, y)
-
-        private fun Position.getHeight() = height[y][x]
     }
 
     private data class Position(val x: Int, val y: Int)
