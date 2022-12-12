@@ -8,7 +8,7 @@ import java.io.File
 private const val BASE_PACKAGE = "com.github.leomartins1999"
 
 fun main() {
-    repeat(11) { runDay(it + 1) }
+    repeat(12) { runDay(it + 1) }
 }
 
 private fun runDay(number: Int) {
