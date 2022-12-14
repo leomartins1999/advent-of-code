@@ -11,6 +11,24 @@ class Day13 : Day {
         .onEach { (idx, _) -> println("$idx has right order!") }
         .sumOf { (idx, _) -> idx }
 
+    override fun part2(input: String) = input
+        .parse()
+        .flatMap { listOf(it.left, it.right) }
+        .asSequence()
+        .plus(dividerPackets)
+        .sortedWith { p1, p2 ->
+            when (p1.isRightOrder(p2)) {
+                ComparisonResult.RIGHT -> -1
+                ComparisonResult.NOT_RIGHT -> 1
+                else -> 0
+            }
+        }
+        .onEachIndexed { idx, p -> println("[$idx] $p") }
+        .mapIndexed { idx, p -> Pair(idx, p) }
+        .filter { (_, p) -> p in dividerPackets }
+        .map { (idx, _) -> idx + 1 }
+        .fold(1) { acc, idx -> acc * idx }
+
     private fun String.parse() = split("\n")
         .filter { it.isNotBlank() }
         .map { it.toPacket() }
@@ -116,5 +134,15 @@ class Day13 : Day {
             .also { println("$this\nright order? $it") }
 
         override fun toString() = "Packet 1: $left\nPacket 2: $right"
+    }
+
+    private companion object {
+        val dividerPackets = listOf(
+            buildDividerPacket(2),
+            buildDividerPacket(6)
+        )
+
+        private fun buildDividerPacket(v: Int) =
+            Packet(parts = listOf(Packet(parts = listOf(PacketBit(v = v)))))
     }
 }
