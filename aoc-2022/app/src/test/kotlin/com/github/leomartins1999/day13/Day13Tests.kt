@@ -44,5 +44,4 @@ class Day13Tests {
 
         assertEquals(140, result)
     }
-
 }

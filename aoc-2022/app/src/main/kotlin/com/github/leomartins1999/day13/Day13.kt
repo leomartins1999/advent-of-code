@@ -8,7 +8,6 @@ class Day13 : Day {
         .parse()
         .mapIndexed { idx, packets -> Pair(idx + 1, packets) }
         .filter { (_, packets) -> packets.inRightOrder() == ComparisonResult.RIGHT }
-        .onEach { (idx, _) -> println("$idx has right order!") }
         .sumOf { (idx, _) -> idx }
 
     override fun part2(input: String) = input
@@ -23,7 +22,6 @@ class Day13 : Day {
                 else -> 0
             }
         }
-        .onEachIndexed { idx, p -> println("[$idx] $p") }
         .mapIndexed { idx, p -> Pair(idx, p) }
         .filter { (_, p) -> p in dividerPackets }
         .map { (idx, _) -> idx + 1 }
@@ -33,18 +31,15 @@ class Day13 : Day {
         .filter { it.isNotBlank() }
         .map { it.toPacket() }
         .chunked(2)
-        .map { (first, second) -> Packets(first, second) }
+        .map { (first, second) -> PacketPair(first, second) }
 
-    private fun String.toPacket(): Packet {
-        println("Converting $this to packet")
-
-        val parts = mutableListOf<PacketPart>()
+    private fun String.toPacket(): PacketList {
+        val parts = mutableListOf<Packet>()
 
         var idx = 1
 
         while (idx < length - 1) {
             val char = this[idx]
-            println("-> Parsing $char (idx: $idx)")
 
             if (char == '[') {
                 val lastIdx = getPacketLastIndex(idx)
@@ -63,7 +58,7 @@ class Day13 : Day {
             }
         }
 
-        return Packet(parts = parts)
+        return PacketList(parts = parts)
     }
 
     private fun String.getPacketLastIndex(firstIndex: Int): Int {
@@ -82,14 +77,22 @@ class Day13 : Day {
         return -1
     }
 
-    private interface PacketPart {
-        fun isRightOrder(other: PacketPart): ComparisonResult
+    private companion object {
+        val dividerPackets = listOf(buildDividerPacket(2), buildDividerPacket(6))
+
+        private fun buildDividerPacket(v: Int) =
+            PacketList(parts = listOf(PacketList(parts = listOf(PacketBit(v = v)))))
     }
 
-    private data class PacketBit(val v: Int) : PacketPart {
-        override fun toString() = v.toString()
+    private enum class ComparisonResult { RIGHT, NOT_RIGHT, CONTINUE }
 
-        override fun isRightOrder(other: PacketPart): ComparisonResult {
+    private interface Packet {
+        fun isRightOrder(other: Packet): ComparisonResult
+    }
+
+    private data class PacketBit(val v: Int) : Packet {
+
+        override fun isRightOrder(other: Packet): ComparisonResult {
             if (other is PacketBit) {
                 return when {
                     v == other.v -> ComparisonResult.CONTINUE
@@ -98,18 +101,17 @@ class Day13 : Day {
                 }
             }
 
-            return Packet(parts = listOf(this)).isRightOrder(other)
+            return PacketList(parts = listOf(this)).isRightOrder(other)
         }
     }
 
-    private data class Packet(val parts: List<PacketPart>) : PacketPart {
-        override fun toString() = "[${parts.joinToString(separator = ",")}]"
+    private data class PacketList(val parts: List<Packet>) : Packet {
 
-        override fun isRightOrder(other: PacketPart) =
-            if (other is PacketBit) isRightOrder(Packet(parts = listOf(other)))
-            else isRightOrder(other as Packet)
+        override fun isRightOrder(other: Packet) =
+            if (other is PacketBit) isRightOrder(PacketList(parts = listOf(other)))
+            else isRightOrder(other as PacketList)
 
-        private fun isRightOrder(other: Packet): ComparisonResult {
+        private fun isRightOrder(other: PacketList): ComparisonResult {
             parts.forEachIndexed { idx, part ->
                 val otherPart = other.parts.getOrNull(idx) ?: return ComparisonResult.NOT_RIGHT
 
@@ -126,23 +128,7 @@ class Day13 : Day {
         }
     }
 
-    private enum class ComparisonResult { RIGHT, NOT_RIGHT, CONTINUE }
-
-    private data class Packets(val left: Packet, val right: Packet) {
-        fun inRightOrder() = left
-            .isRightOrder(right)
-            .also { println("$this\nright order? $it") }
-
-        override fun toString() = "Packet 1: $left\nPacket 2: $right"
-    }
-
-    private companion object {
-        val dividerPackets = listOf(
-            buildDividerPacket(2),
-            buildDividerPacket(6)
-        )
-
-        private fun buildDividerPacket(v: Int) =
-            Packet(parts = listOf(Packet(parts = listOf(PacketBit(v = v)))))
+    private data class PacketPair(val left: Packet, val right: Packet) {
+        fun inRightOrder() = left.isRightOrder(right)
     }
 }
