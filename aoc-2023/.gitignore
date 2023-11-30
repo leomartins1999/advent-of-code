@@ -1,2 +1,4 @@
 target/
-input/
+
+input/*
+!input/input_sample.txt

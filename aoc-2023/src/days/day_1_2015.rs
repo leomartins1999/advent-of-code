@@ -1,8 +1,7 @@
-use std::fs;
+use crate::utils;
 
 pub fn solve() -> [i32; 2] {
-    // TODO: maybe use https://doc.rust-lang.org/std/macro.module_path.html to get input path?
-    let input = fs::read_to_string("./input/2015-day1-part1.txt").unwrap();
+    let input = utils::get_input(std::module_path!());
 
     return [get_level(&input), get_first_basement_position(&input)];
 }
