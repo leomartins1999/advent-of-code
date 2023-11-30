@@ -1,5 +1,10 @@
+use std::fs;
+
 pub fn solve() -> i32 {
-    return get_level("tbd");
+    // TODO: maybe use https://doc.rust-lang.org/std/macro.module_path.html to get input path?
+    let input = fs::read_to_string("./input/2015-day1-part1.txt").unwrap();
+
+    return get_level(&input);
 }
 
 fn get_level(input: &str) -> i32 {
