@@ -1,8 +1,8 @@
 use std::fs;
 
-pub fn get_input(module_path: &str) -> String {
-    let name = module_path.split("::").last().unwrap();
-    let file_path = format!("input/{name}.txt");
+pub fn get_input(module: &str) -> String {
+    let day = module.split("::").last().unwrap();
+    let file_path = format!("input/{day}.txt");
 
     return fs::read_to_string(file_path).unwrap();
 }
