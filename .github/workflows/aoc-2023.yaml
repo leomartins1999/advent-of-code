@@ -3,7 +3,7 @@ name: AoC 2023
 on:
   pull_request:
     paths:
-      - aoc-2023/
+      - 'aoc-2023/**'
 
 jobs:
   aoc-2023:
