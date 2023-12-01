@@ -3,7 +3,7 @@ name: AoC 2022
 on:
   pull_request:
     paths:
-      - ./aoc-2022/**
+      - aoc-2022/
 
 jobs:
   aoc-2022:
