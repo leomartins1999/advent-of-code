@@ -1,21 +1,19 @@
-name: AoC 2023
+name: AoC 2021
 
 on:
   pull_request:
     paths:
-      - ./aoc-2023/**
+      - ./aoc-2021/**
 
 jobs:
-  aoc-2023:
-    name: AoC 2023
+  aoc-2021:
+    name: AoC 2021
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./aoc-2023
+        working-directory: ./aoc-2021
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
       - name: Run tests
-        run: cargo test
-      - name: Build
-        run: cargo build
+        run: bundle exec rspec
