@@ -1,0 +1,21 @@
+name: AoC 2023
+
+on:
+  pull_request:
+    paths:
+      - ./aoc-2023/**
+
+jobs:
+  aoc-2022:
+    name: AoC 2023
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aoc-2023
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Run tests
+        run: cargo test
+      - name: Build
+        run: cargo build
