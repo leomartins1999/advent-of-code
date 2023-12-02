@@ -4,59 +4,18 @@ const RED_BALLS: u32 = 12;
 const GREEN_BALLS: u32 = 13;
 const BLUE_BALLS: u32 = 14;
 
-struct Game {
-    rounds: Vec<Balls>,
-}
-
-struct Balls {
-    red_balls: u32,
-    green_balls: u32,
-    blue_balls: u32,
-}
-
-impl Game {
-    pub fn power(&self) -> u32 {
-        let balls = self.min_balls();
-
-        return balls.red_balls * balls.green_balls * balls.blue_balls;
-    }
-
-    fn min_balls(&self) -> Balls {
-        let (mut red_balls, mut green_balls, mut blue_balls) = (0, 0, 0);
-
-        for balls in &self.rounds {
-            if red_balls < balls.red_balls {
-                red_balls = balls.red_balls;
-            }
-
-            if green_balls < balls.green_balls {
-                green_balls = balls.green_balls;
-            }
-
-            if blue_balls < balls.blue_balls {
-                blue_balls = balls.blue_balls;
-            }
-        }
-
-        return Balls {
-            red_balls,
-            green_balls,
-            blue_balls,
-        };
-    }
-}
-
 pub fn solve() -> [u32; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [sum_possible_games(&input), 0];
+    return [sum_possible_games(&input), games_power(&input)];
 }
 
 fn sum_possible_games(input: &str) -> u32 {
     return input
         .split("\n")
+        .map(|line| build_game(line))
         .enumerate()
-        .filter(|(_, line)| possible_game(line))
+        .filter(|(_, game)| game.is_valid())
         .map(|(i, _)| i + 1)
         .map(|game_number| TryInto::<u32>::try_into(game_number).unwrap())
         .sum();
@@ -68,46 +27,6 @@ fn games_power(input: &str) -> u32 {
         .map(|line| build_game(line))
         .map(|game| game.power())
         .sum();
-}
-
-fn possible_game(input: &str) -> bool {
-    return input
-        .split(":")
-        .nth(1)
-        .unwrap()
-        .trim()
-        .split(";")
-        .all(|round| is_round_valid(round));
-}
-
-fn is_round_valid(input: &str) -> bool {
-    let (mut red, mut green, mut blue) = (0, 0, 0);
-
-    let balls = input.split(",").map(|ball| ball.trim());
-
-    for ball in balls {
-        let mut chunks = ball.split(" ");
-
-        let number: u32 = chunks.nth(0).unwrap().parse().unwrap();
-        let color = chunks.nth(0).unwrap();
-
-        match color {
-            "red" => red += number,
-            "green" => green += number,
-            "blue" => blue += number,
-            _ => panic!("Unknown color {color}!"),
-        }
-
-        if !is_valid(red, green, blue) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-fn is_valid(red: u32, green: u32, blue: u32) -> bool {
-    return red <= RED_BALLS && green <= GREEN_BALLS && blue <= BLUE_BALLS;
 }
 
 fn build_game(game_input: &str) -> Game {
@@ -146,6 +65,56 @@ fn build_round(round_input: &str) -> Balls {
         green_balls,
         blue_balls,
     };
+}
+
+struct Game {
+    rounds: Vec<Balls>,
+}
+
+impl Game {
+    pub fn is_valid(&self) -> bool {
+        return self.rounds.iter().all(|balls| {
+            balls.red_balls <= RED_BALLS
+                && balls.green_balls <= GREEN_BALLS
+                && balls.blue_balls <= BLUE_BALLS
+        });
+    }
+
+    pub fn power(&self) -> u32 {
+        let balls = self.min_balls();
+
+        return balls.red_balls * balls.green_balls * balls.blue_balls;
+    }
+
+    fn min_balls(&self) -> Balls {
+        let (mut red_balls, mut green_balls, mut blue_balls) = (0, 0, 0);
+
+        for balls in &self.rounds {
+            if red_balls < balls.red_balls {
+                red_balls = balls.red_balls;
+            }
+
+            if green_balls < balls.green_balls {
+                green_balls = balls.green_balls;
+            }
+
+            if blue_balls < balls.blue_balls {
+                blue_balls = balls.blue_balls;
+            }
+        }
+
+        return Balls {
+            red_balls,
+            green_balls,
+            blue_balls,
+        };
+    }
+}
+
+struct Balls {
+    red_balls: u32,
+    green_balls: u32,
+    blue_balls: u32,
 }
 
 #[cfg(test)]
