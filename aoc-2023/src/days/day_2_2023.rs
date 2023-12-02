@@ -1,9 +1,63 @@
+use crate::utils;
+
+const RED_BALLS: u32 = 12;
+const GREEN_BALLS: u32 = 13;
+const BLUE_BALLS: u32 = 14;
+
 pub fn solve() -> [u32; 2] {
-    return [0, 0];
+    let input = utils::get_input(std::module_path!());
+
+    return [sum_possible_games(&input), 0];
 }
 
 fn sum_possible_games(input: &str) -> u32 {
-    return 0;
+    return input
+        .split("\n")
+        .enumerate()
+        .filter(|(_, line)| possible_game(line))
+        .map(|(i, _)| i + 1)
+        .map(|game_number| TryInto::<u32>::try_into(game_number).unwrap())
+        .sum();
+}
+
+fn possible_game(input: &str) -> bool {
+    return input
+        .split(":")
+        .nth(1)
+        .unwrap()
+        .trim()
+        .split(";")
+        .all(|round| is_round_valid(round));
+}
+
+fn is_round_valid(input: &str) -> bool {
+    let (mut red, mut green, mut blue) = (0, 0, 0);
+
+    let balls = input.split(",").map(|ball| ball.trim());
+
+    for ball in balls {
+        let mut chunks = ball.split(" ");
+
+        let number: u32 = chunks.nth(0).unwrap().parse().unwrap();
+        let color = chunks.nth(0).unwrap();
+
+        match color {
+            "red" => red += number,
+            "green" => green += number,
+            "blue" => blue += number,
+            _ => panic!("Unknown color {color}!"),
+        }
+
+        if !is_valid(red, green, blue) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn is_valid(red: u32, green: u32, blue: u32) -> bool {
+    return red <= RED_BALLS && green <= GREEN_BALLS && blue <= BLUE_BALLS;
 }
 
 #[cfg(test)]
