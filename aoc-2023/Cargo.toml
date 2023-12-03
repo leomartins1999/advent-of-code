@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 automod = "1.0"
+itertools = "0.12.0"
