@@ -52,39 +52,24 @@ struct Position {
 }
 
 impl EngineSchematic {
-    fn sum_part_numbers(&mut self) -> u32 {
-        let mut sum = 0;
-
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.is_symbol(&Position { x, y }) {
-                    sum += self
-                        .get_adjacent_numbers(&Position { x, y })
-                        .iter()
-                        .sum::<u32>();
-                }
-            }
-        }
-
-        return sum;
+    fn sum_part_numbers(&self) -> u32 {
+        return self
+            .all_positions()
+            .iter()
+            .filter(|pos| self.is_symbol(pos))
+            .flat_map(|pos| self.get_adjacent_numbers(pos))
+            .sum();
     }
 
     fn sum_gear_ratios(&self) -> u32 {
-        let mut sum = 0;
-
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.get_position(&Position { x, y }) == GEAR {
-                    let adjacent_numbers = self.get_adjacent_numbers(&Position { x, y });
-
-                    if adjacent_numbers.len() == GEAR_NUMBERS {
-                        sum += adjacent_numbers.iter().fold(1, |sum, val| sum * val);
-                    }
-                }
-            }
-        }
-
-        return sum;
+        return self
+            .all_positions()
+            .iter()
+            .filter(|pos| self.get_position(pos) == GEAR)
+            .map(|pos| self.get_adjacent_numbers(pos))
+            .filter(|numbers| numbers.len() == GEAR_NUMBERS)
+            .map(|numbers| numbers.iter().fold(1, |sum, num| sum * num))
+            .sum();
     }
 
     fn get_adjacent_numbers(&self, pos: &Position) -> Vec<u32> {
@@ -157,13 +142,9 @@ impl EngineSchematic {
     }
 
     fn is_symbol(&self, pos: &Position) -> bool {
-        let c = self.get(pos.x, pos.y);
+        let c = self.get_position(pos);
 
         return !c.is_digit(RADIX) && c != NOOP;
-    }
-
-    fn get(&self, x: usize, y: usize) -> char {
-        return self.schema[y][x];
     }
 
     fn get_position(&self, pos: &Position) -> char {
@@ -172,6 +153,18 @@ impl EngineSchematic {
 
     fn get_position_digit(&self, pos: &Position) -> u32 {
         return self.schema[pos.y][pos.x].to_digit(RADIX).unwrap();
+    }
+
+    fn all_positions(&self) -> Vec<Position> {
+        let mut acc = vec![];
+
+        for x in 0..self.width {
+            for y in 0..self.height {
+                acc.push(Position { x, y })
+            }
+        }
+
+        return acc;
     }
 }
 
