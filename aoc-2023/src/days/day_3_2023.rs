@@ -51,27 +51,17 @@ struct Position {
     y: usize,
 }
 
-#[derive(PartialEq)]
-enum Direction {
-    Left,
-    Right,
-    Both,
-}
-
 impl EngineSchematic {
-    // fn sum_part_numbers(&mut self) -> u32 {
-    //     self.filter_non_part_numbers();
-
-    //     return self.sum_numbers();
-    // }
-
     fn sum_part_numbers(&mut self) -> u32 {
         let mut sum = 0;
 
         for x in 0..self.width {
             for y in 0..self.height {
                 if self.is_symbol(&Position { x, y }) {
-                    sum += self.get_adjacent_numbers(&Position { x, y }).iter().sum::<u32>();
+                    sum += self
+                        .get_adjacent_numbers(&Position { x, y })
+                        .iter()
+                        .sum::<u32>();
                 }
             }
         }
@@ -134,51 +124,6 @@ impl EngineSchematic {
         return acc;
     }
 
-    fn filter_non_part_numbers(&mut self) {
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.get(x, y).is_digit(RADIX) && !self.is_part_number(x, y, None) {
-                    self.remove(x, y)
-                }
-            }
-        }
-    }
-
-    fn is_part_number(&self, x: usize, y: usize, direction: Option<Direction>) -> bool {
-        if !self.get(x, y).is_digit(RADIX) {
-            return false;
-        }
-
-        let recursive_direction = direction.unwrap_or(Direction::Both);
-
-        if self.is_adjacent_to_symbol(x, y) {
-            return true;
-        }
-
-        if recursive_direction != Direction::Right
-            && x > 0
-            && self.is_part_number(x - 1, y, Some(Direction::Left))
-        {
-            return true;
-        }
-
-        if recursive_direction != Direction::Left
-            && x < self.width - 1
-            && self.is_part_number(x + 1, y, Some(Direction::Right))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    fn is_adjacent_to_symbol(&self, x: usize, y: usize) -> bool {
-        return self
-            .adjacent_positions(&Position { x, y })
-            .iter()
-            .any(|pos| self.is_symbol(pos));
-    }
-
     fn adjacent_positions(&self, pos: &Position) -> Vec<Position> {
         let x = pos.x;
         let y = pos.y;
@@ -211,40 +156,6 @@ impl EngineSchematic {
         return res;
     }
 
-    fn sum_numbers(&self) -> u32 {
-        return self
-            .schema
-            .iter()
-            .map(|line| {
-                line.iter()
-                    .map(|char| {
-                        if char.is_digit(RADIX) {
-                            char.to_owned()
-                        } else {
-                            NOOP
-                        }
-                    })
-                    .collect::<Vec<char>>()
-            })
-            .map(|line| String::from_iter(line))
-            .flat_map(|line| {
-                line.split(".")
-                    .map(|str| str.to_owned())
-                    .collect::<Vec<String>>()
-            })
-            .map(|number_str| {
-                number_str
-                    .chars()
-                    .filter(|c| c.is_digit(RADIX))
-                    .collect::<Vec<char>>()
-            })
-            .filter(|number_chars| number_chars.len() > 0)
-            .map(|number_chars| String::from_iter(number_chars))
-            .map(|number_str| number_str.parse::<u32>().unwrap())
-            .map(|number| number)
-            .sum();
-    }
-
     fn is_symbol(&self, pos: &Position) -> bool {
         let c = self.get(pos.x, pos.y);
 
@@ -261,10 +172,6 @@ impl EngineSchematic {
 
     fn get_position_digit(&self, pos: &Position) -> u32 {
         return self.schema[pos.y][pos.x].to_digit(RADIX).unwrap();
-    }
-
-    fn remove(&mut self, x: usize, y: usize) {
-        self.schema[y][x] = NOOP;
     }
 }
 
