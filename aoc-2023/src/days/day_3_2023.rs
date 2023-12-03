@@ -59,10 +59,24 @@ enum Direction {
 }
 
 impl EngineSchematic {
-    fn sum_part_numbers(&mut self) -> u32 {
-        self.filter_non_part_numbers();
+    // fn sum_part_numbers(&mut self) -> u32 {
+    //     self.filter_non_part_numbers();
 
-        return self.sum_numbers();
+    //     return self.sum_numbers();
+    // }
+
+    fn sum_part_numbers(&mut self) -> u32 {
+        let mut sum = 0;
+
+        for x in 0..self.width {
+            for y in 0..self.height {
+                if self.is_symbol(&Position { x, y }) {
+                    sum += self.get_adjacent_numbers(&Position { x, y }).iter().sum::<u32>();
+                }
+            }
+        }
+
+        return sum;
     }
 
     fn sum_gear_ratios(&self) -> u32 {
