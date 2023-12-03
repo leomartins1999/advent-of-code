@@ -23,11 +23,11 @@ fn sum_gear_ratios(input: &str) -> u32 {
 }
 
 fn build_schematic(input: &str) -> EngineSchematic {
-    let schema: Vec<Vec<char>> = input
+    let schema = input
         .split("\n")
         .map(|line| line.trim())
-        .map(|line| line.chars().collect())
-        .collect();
+        .map(|line| line.chars().collect_vec())
+        .collect_vec();
 
     let width = schema[0].len();
     let height = schema.len();
@@ -39,14 +39,13 @@ fn build_schematic(input: &str) -> EngineSchematic {
     };
 }
 
-#[derive(Debug)]
 struct EngineSchematic {
     schema: Vec<Vec<char>>,
     width: usize,
     height: usize,
 }
 
-#[derive(PartialEq, Eq, Clone, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Clone)]
 struct Position {
     x: usize,
     y: usize,
@@ -71,12 +70,10 @@ impl EngineSchematic {
 
         for x in 0..self.width {
             for y in 0..self.height {
-                if self.get(x, y) == GEAR {
-                    let adjacent_numbers = self.get_adjacent_numbers(x, y);
+                if self.get_position(&Position { x, y }) == GEAR {
+                    let adjacent_numbers = self.get_adjacent_numbers(&Position { x, y });
 
                     if adjacent_numbers.len() == GEAR_NUMBERS {
-                        println!("{:?}", adjacent_numbers);
-
                         sum += adjacent_numbers.iter().fold(1, |sum, val| sum * val);
                     }
                 }
@@ -86,22 +83,18 @@ impl EngineSchematic {
         return sum;
     }
 
-    fn get_adjacent_numbers(&self, x: usize, y: usize) -> Vec<u32> {
+    fn get_adjacent_numbers(&self, pos: &Position) -> Vec<u32> {
         return self
-            .adjacent_positions(x, y)
+            .adjacent_positions(pos)
             .iter()
             .filter(|pos| self.get_position(pos).is_digit(RADIX))
             .map(|pos| self.get_number_beggining_position(&pos))
-            .collect_vec()
-            .iter()
             .unique()
             .map(|pos| self.get_number(&pos))
             .collect_vec();
     }
 
     fn get_number_beggining_position(&self, pos: &Position) -> Position {
-        println!("get_number_beggining_position: {:?}", pos);
-
         let mut x = pos.x;
         let y = pos.y;
 
@@ -109,28 +102,20 @@ impl EngineSchematic {
             x -= 1;
         }
 
-        println!("-> {x},{y}");
-
         return Position { x, y };
     }
 
     fn get_number(&self, beggining_pos: &Position) -> u32 {
-        println!("#get_number: {:?}", beggining_pos);
-
         let mut acc = 0;
 
         let mut x = beggining_pos.x;
         let y = beggining_pos.y;
 
         while x < self.width && self.get_position(&Position { x, y }).is_digit(RADIX) {
-            println!("{}", self.get_position_digit(&Position { x, y }));
-
             acc *= 10;
             acc += self.get_position_digit(&Position { x, y });
             x += 1
         }
-
-        println!("-> {acc}");
 
         return acc;
     }
@@ -151,13 +136,6 @@ impl EngineSchematic {
         }
 
         let recursive_direction = direction.unwrap_or(Direction::Both);
-
-        println!(
-            "{x}{y} - {}, {}, {}",
-            self.get(x, y),
-            self.is_adjacent_to_symbol(x, y),
-            self.get(x, y).is_digit(RADIX)
-        );
 
         if self.is_adjacent_to_symbol(x, y) {
             return true;
@@ -182,12 +160,15 @@ impl EngineSchematic {
 
     fn is_adjacent_to_symbol(&self, x: usize, y: usize) -> bool {
         return self
-            .adjacent_positions(x, y)
+            .adjacent_positions(&Position { x, y })
             .iter()
             .any(|pos| self.is_symbol(pos));
     }
 
-    fn adjacent_positions(&self, x: usize, y: usize) -> Vec<Position> {
+    fn adjacent_positions(&self, pos: &Position) -> Vec<Position> {
+        let x = pos.x;
+        let y = pos.y;
+
         let mut res = vec![];
 
         let starting_x = if x == 0 { 0 } else { x - 1 };
@@ -246,10 +227,7 @@ impl EngineSchematic {
             .filter(|number_chars| number_chars.len() > 0)
             .map(|number_chars| String::from_iter(number_chars))
             .map(|number_str| number_str.parse::<u32>().unwrap())
-            .map(|number| {
-                println!("{number}");
-                number
-            })
+            .map(|number| number)
             .sum();
     }
 
