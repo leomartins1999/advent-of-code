@@ -1,11 +1,11 @@
 use crate::utils;
 use itertools::Itertools;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub fn solve() -> [u32; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [get_points(&input), 0];
+    return [get_points(&input), get_number_of_cards(&input)];
 }
 
 fn get_points(input: &str) -> u32 {
@@ -13,6 +13,43 @@ fn get_points(input: &str) -> u32 {
         .iter()
         .map(|card| card.get_points())
         .sum();
+}
+
+fn get_number_of_cards(input: &str) -> u32 {
+    let cards = build_cards(input);
+
+    let (number_to_card, mut card_counter) = build_card_maps(&cards);
+    let last_card_number = number_to_card.len();
+
+    for card_number in 1..=last_card_number {
+        let card = number_to_card.get(&card_number).unwrap();
+
+        let intersection_size = card.intersection_size();
+
+        let other_starting_card = card_number + 1;
+        let other_ending_card = usize::min(card_number +  intersection_size, last_card_number);
+
+        for other_card_number in other_starting_card..=other_ending_card {
+            card_counter.insert(
+                other_card_number,
+                card_counter.get(&other_card_number).unwrap() + card_counter.get(&card_number).unwrap(),
+            );
+        }
+    }
+
+    return card_counter.values().sum();
+}
+
+fn build_card_maps(cards: &Vec<Card>) -> (HashMap<usize, &Card>, HashMap<usize, u32>) {
+    let mut number_to_card = HashMap::new();
+    let mut card_counter = HashMap::new();
+
+    for (i, card) in cards.iter().enumerate() {
+        number_to_card.insert(i + 1, card);
+        card_counter.insert(i + 1, 1);
+    }
+
+    return (number_to_card, card_counter);
 }
 
 fn build_cards(input: &str) -> Vec<Card> {
@@ -51,17 +88,21 @@ struct Card {
 
 impl Card {
     fn get_points(&self) -> u32 {
-        let intersection_size = self
-            .winning_numbers
-            .intersection(&self.own_numbers)
-            .collect_vec()
-            .len();
+        let intersection_size = self.intersection_size();
 
         if intersection_size == 0 {
             return 0;
         }
 
         return u32::pow(2, (intersection_size - 1).try_into().unwrap());
+    }
+
+    fn intersection_size(&self) -> usize {
+        return self
+            .winning_numbers
+            .intersection(&self.own_numbers)
+            .collect_vec()
+            .len();
     }
 }
 
@@ -83,6 +124,6 @@ mod tests {
 
     #[test]
     fn part_2() {
-        // assert_eq!(sum_gear_ratios(INPUT), 467835)
+        assert_eq!(get_number_of_cards(INPUT), 30)
     }
 }
