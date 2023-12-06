@@ -2,36 +2,46 @@ use itertools::Itertools;
 
 use crate::utils;
 
-pub fn solve() -> [u32; 2] {
+pub fn solve() -> [u64; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [get_number_of_wins(&input), 0];
+    return [
+        get_number_of_wins(&input, None),
+        get_number_of_wins(&input, Some(true)),
+    ];
 }
 
-fn get_number_of_wins(input: &str) -> u32 {
-    return build_races(input)
+fn get_number_of_wins(input: &str, single_race: Option<bool>) -> u64 {
+    return build_races(input, single_race)
         .iter()
         .map(|race| race.get_number_of_wins())
         .fold(1, |acc, wins| acc * wins);
 }
 
-fn build_races(input: &str) -> Vec<Race> {
+fn build_races(input: &str, single_race: Option<bool>) -> Vec<Race> {
     let mut lines = input.split("\n").map(|line| line.trim());
 
     let times = extract_values(lines.next().unwrap());
     let distances = extract_values(lines.next().unwrap());
 
-    return times
-        .iter()
-        .enumerate()
-        .map(|(idx, time)| Race {
-            time: time.clone(),
-            distance: distances[idx],
-        })
-        .collect_vec();
+    if single_race.unwrap_or(false) {
+        let time = times.iter().join("").parse().unwrap();
+        let distance = distances.iter().join("").parse().unwrap();
+
+        return vec![Race { time, distance }];
+    } else {
+        return times
+            .iter()
+            .enumerate()
+            .map(|(idx, time)| Race {
+                time: time.clone(),
+                distance: distances[idx],
+            })
+            .collect_vec();
+    }
 }
 
-fn extract_values(line: &str) -> Vec<u32> {
+fn extract_values(line: &str) -> Vec<u64> {
     return line
         .split(":")
         .skip(1)
@@ -50,12 +60,12 @@ fn extract_values(line: &str) -> Vec<u32> {
 
 #[derive(Debug)]
 struct Race {
-    time: u32,
-    distance: u32,
+    time: u64,
+    distance: u64,
 }
 
 impl Race {
-    fn get_number_of_wins(&self) -> u32 {
+    fn get_number_of_wins(&self) -> u64 {
         println!("Race {:?}", self);
 
         let mut win_counter = 0;
@@ -77,7 +87,7 @@ impl Race {
         return win_counter;
     }
 
-    fn is_win(&self, hold_time: u32) -> bool {
+    fn is_win(&self, hold_time: u64) -> bool {
         let remaining_time = self.time - hold_time;
 
         return self.distance < remaining_time * hold_time;
@@ -93,11 +103,11 @@ mod tests {
 
     #[test]
     fn part_1() {
-        assert_eq!(get_number_of_wins(INPUT), 288)
+        assert_eq!(get_number_of_wins(INPUT, None), 288)
     }
 
     #[test]
     fn part_2() {
-        //assert_eq!(get_number_of_cards(INPUT), 30)
+        assert_eq!(get_number_of_wins(INPUT, Some(true)), 71503)
     }
 }
