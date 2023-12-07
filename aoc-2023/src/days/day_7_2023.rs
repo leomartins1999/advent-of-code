@@ -6,17 +6,20 @@ use itertools::Itertools;
 pub fn solve() -> [u32; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [get_total_winnings(&input), 0];
+    return [
+        get_total_winnings(&input, None),
+        get_total_winnings(&input, Some(true)),
+    ];
 }
 
-fn get_total_winnings(input: &str) -> u32 {
+fn get_total_winnings(input: &str, with_joker: Option<bool>) -> u32 {
     return parse_input(input)
         .iter()
-        .sorted_by(|a, b| a.compare_to(b))
+        .sorted_by(|a, b| a.compare_to(b, with_joker))
         .enumerate()
         .map(|(idx, hand)| (idx + 1, hand))
         .map(|(rank, hand)| {
-            // println!("Rank {rank} -> {:?}", hand);
+            println!("Rank {rank} -> {:?}", hand);
 
             return TryInto::<u32>::try_into(rank).unwrap() * hand.bid;
         })
@@ -52,12 +55,11 @@ struct Hand {
     bid: u32,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Hash, Eq, Copy, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Hash, Eq, Clone, Copy)]
 enum Card {
     A,
     K,
     Q,
-    J,
     T,
     _9,
     _8,
@@ -67,6 +69,7 @@ enum Card {
     _4,
     _3,
     _2,
+    J,
 }
 
 impl FromStr for Card {
@@ -92,7 +95,7 @@ impl FromStr for Card {
     }
 }
 
-#[derive(PartialEq, PartialOrd)]
+#[derive(PartialEq, PartialOrd, Ord, Eq)]
 enum HandKind {
     HighCard,
     OnePair,
@@ -104,8 +107,8 @@ enum HandKind {
 }
 
 impl Hand {
-    fn compare_to(&self, other: &Hand) -> Ordering {
-        let (self_kind, other_kind) = (self.get_kind(), other.get_kind());
+    fn compare_to(&self, other: &Hand, with_joker: Option<bool>) -> Ordering {
+        let (self_kind, other_kind) = (self.get_kind(with_joker), other.get_kind(with_joker));
 
         if self_kind > other_kind {
             return Ordering::Greater;
@@ -122,64 +125,134 @@ impl Hand {
         return Ordering::Equal;
     }
 
-    fn get_kind(&self) -> HandKind {
-        let tally = get_char_tally(&self.hand);
+    fn get_kind(&self, with_joker: Option<bool>) -> HandKind {
+        let tally = get_char_tally(&self.hand, None);
 
-        if tally.len() == 1 {
-            return HandKind::FiveOfAKind;
+        if !with_joker.unwrap_or(false) || !tally.contains_key(&Card::J) || tally.len() == 1 {
+            return get_kind_for_tally(tally);
         }
 
-        if tally.values().max().unwrap() == &4 {
-            return HandKind::FourOfAKind;
-        }
+        let max_cnt = tally
+            .iter()
+            .filter(|(card, _)| **card != Card::J)
+            .map(|(_, cnt)| cnt)
+            .max();
 
-        if tally.values().contains(&3) {
-            if tally.values().contains(&2) {
-                return HandKind::FullHouse;
-            }
+        let cards_with_highest_cnt = tally
+            .iter()
+            .filter(|(_, cnt)| *cnt == max_cnt.unwrap())
+            .map(|(card, _)| card)
+            .collect_vec();
 
-            return HandKind::ThreeOfAKind;
-        }
-
-        if tally.values().contains(&2) {
-            if tally.values().filter(|cnt| *cnt == &2).count() == 2 {
-                return HandKind::TwoPair;
-            }
-
-            return HandKind::OnePair;
-        }
-
-        return HandKind::HighCard;
+        return cards_with_highest_cnt
+            .iter()
+            .map(|card| get_char_tally(&self.hand, Some(**card)))
+            .map(|card_tally| get_kind_for_tally(card_tally))
+            .max()
+            .unwrap();
     }
 }
 
-fn get_char_tally(cards: &Vec<Card>) -> HashMap<Card, u32> {
+fn get_char_tally(cards: &Vec<Card>, replace_joker_with: Option<Card>) -> HashMap<Card, u32> {
     let mut res = HashMap::new();
 
     for c in cards.iter() {
         res.insert(*c, res.get(c).unwrap_or(&0) + 1);
     }
 
+    println!("{:?}", res);
+
+    if replace_joker_with.is_some() {
+        let replacement = replace_joker_with.unwrap();
+
+        res.insert(
+            replacement,
+            res.get(&replacement).unwrap_or(&0) + res.get(&Card::J).unwrap_or(&0),
+        );
+        res.remove(&Card::J);
+
+        println!("Replacing joker with {:?}!", replacement);
+        println!("{:?}", res);
+    }
+
     return res;
+}
+
+fn get_kind_for_tally(tally: HashMap<Card, u32>) -> HandKind {
+    if tally.len() == 1 {
+        return HandKind::FiveOfAKind;
+    }
+
+    if tally.values().max().unwrap() == &4 {
+        return HandKind::FourOfAKind;
+    }
+
+    if tally.values().contains(&3) {
+        if tally.values().contains(&2) {
+            return HandKind::FullHouse;
+        }
+
+        return HandKind::ThreeOfAKind;
+    }
+
+    if tally.values().contains(&2) {
+        if tally.values().filter(|cnt| *cnt == &2).count() == 2 {
+            return HandKind::TwoPair;
+        }
+
+        return HandKind::OnePair;
+    }
+
+    return HandKind::HighCard;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const INPUT: &str = r#"32T3K 765
+    const INPUT_1: &str = r#"32T3K 765
     T55J5 684
     KK677 28
     KTJJT 220
     QQQJA 483"#;
 
+    const INPUT_2: &str = r#"2345A 1
+    Q2KJJ 13
+    Q2Q2Q 19
+    T3T3J 17
+    T3Q33 11
+    2345J 3
+    J345A 2
+    32T3K 5
+    T55J5 29
+    KK677 7
+    KTJJT 34
+    QQQJA 31
+    JJJJJ 37
+    JAAAA 43
+    AAAAJ 59
+    AAAAA 61
+    2AAAA 23
+    2JJJJ 53
+    JJJJ2 41"#;
+
     #[test]
-    fn part_1() {
-        assert_eq!(get_total_winnings(INPUT), 6440)
+    fn part_1_input_1() {
+        assert_eq!(get_total_winnings(INPUT_1, None), 6440)
     }
 
     #[test]
-    fn part_2() {
-        //assert_eq!(get_number_of_cards(INPUT), 30)
+    fn part_2_input_1() {
+        assert_eq!(get_total_winnings(INPUT_1, Some(true)), 5905)
+    }
+
+    #[test]
+    fn part_1_input_2() {
+        assert_eq!(get_total_winnings(INPUT_2, None), 6592)
+    }
+
+    #[test]
+    fn part_2_input_2() {
+        assert_eq!(get_total_winnings(INPUT_2, Some(true)), 6839)
     }
 }
