@@ -1,207 +1,175 @@
-use std::collections::HashMap;
-
-use itertools::Itertools;
-
 use crate::utils;
+use itertools::Itertools;
 
 pub fn solve() -> [u64; 2] {
     let input = utils::get_input(std::module_path!());
 
     return [
-        get_lowest_location_number(&input),
-        get_lowest_location_p2(&input),
+        get_lowest_location(&input, None),
+        get_lowest_location(&input, Some(true)),
     ];
 }
 
-fn get_lowest_location_p2(input: &str) -> u64 {
-    let mut lines = input.split("\n").map(|line| line.trim()).peekable();
+fn get_lowest_location(input: &str, with_seed_ranges: Option<bool>) -> u64 {
+    let mut lines = input.split("\n").map(|line| line.trim());
 
-    let mut seeds = get_seeds_map(lines.next().unwrap());
+    let seed_ranges = parse_seed_ranges(lines.next().unwrap(), with_seed_ranges);
 
-    while lines.peek().is_some() {
-        while !lines.next().unwrap().contains("map:") {
-            // noop
-        }
+    let maps = parse_maps(lines);
 
-        let mut mappings = Vec::new();
-
-        loop {
-            let line = lines.next().unwrap_or("");
-
-            if line.is_empty() {
-                break;
-            }
-
-            mappings.push(build_mapping(line))
-        }
-
-        seeds = apply_mappings_to_map(seeds, mappings);
-
-        print!("{:#?}", seeds);
-    }
-
-    return seeds.iter().map(|range| range.start).min().unwrap();
-}
-
-fn get_seeds_map(seeds_line: &str) -> Vec<SeedRange> {
-    return seeds_line
-        .split(":")
-        .nth(1)
-        .unwrap()
-        .trim()
-        .split(" ")
-        .chunks(2)
-        .into_iter()
-        .map(|mut chunk| {
-            let start = chunk.nth(0).unwrap().parse().unwrap();
-            let length = chunk.nth(0).unwrap().parse().unwrap();
-
-            return SeedRange { start, length };
-        })
-        .collect_vec();
-}
-
-fn apply_mappings_to_map(seeds_map: Vec<SeedRange>, mappings: Vec<Mapping>) -> Vec<SeedRange> {
-    return seeds_map
+    return apply_maps_to_ranges(maps, seed_ranges)
         .iter()
-        .flat_map(|seed_range| explode_range(seed_range, &mappings))
-        .collect_vec();
+        .map(|range| range.start)
+        .min()
+        .unwrap();
 }
 
-fn explode_range(seed_range: &SeedRange, mappings: &Vec<Mapping>) -> Vec<SeedRange> {
-    println!("Exploding mappings for {:?}", seed_range);
-
-    let range = (seed_range.start..seed_range.start + seed_range.length - 1);
-
-    println!("* Range: {:#?}", range);
-
-    let applicable_mappings = mappings.iter().filter(|m| {
-        let mapping_range = m.source_start..m.source_start + m.range_length;
-
-        return range.start <= mapping_range.end && range.end >= mapping_range.start
-    }).collect_vec();
-
-    if applicable_mappings.is_empty() {
-        return vec![seed_range.clone()];
+fn parse_seed_ranges(seeds_line: &str, with_seed_ranges: Option<bool>) -> Vec<Range> {
+    if with_seed_ranges.unwrap_or(false) {
+        return build_seed_ranges(seeds_line);
     }
 
-    return applicable_mappings.iter()
-        .map(|m| {
-            println!("-> Intersects with {:?}", m);
+    return build_single_seed_ranges(seeds_line);
+}
 
-            let mapping_range = m.source_start..m.source_start + m.range_length;
+fn build_seed_ranges(seeds_line: &str) -> Vec<Range> {
+    return get_seeds_data(seeds_line)
+        .chunks(2)
+        .map(|chunk| {
+            let mut iter = chunk.iter();
 
-            let start_idx = if range.start > m.source_start { range.start - m.source_start } else { 0 } ;
-            let end_idx = u64::min(range.end - mapping_range.start, mapping_range.end - mapping_range.start) ;
+            let start = iter.next().unwrap().to_owned();
+            let length = iter.next().unwrap();
+            let end = start + length - 1;
 
-            let start = m.destination_start + start_idx;
-            let end = m.destination_start + end_idx;
-
-            println!("Destination Start: {start}, End: {end}");
-
-            let length = end - start;
-            
-            return SeedRange { start, length };
+            return Range { start, end };
         })
         .collect_vec();
 }
 
-fn get_lowest_location_number(input: &str) -> u64 {
-    let mut lines = input.split("\n").map(|line| line.trim()).peekable();
+fn build_single_seed_ranges(seeds_line: &str) -> Vec<Range> {
+    return get_seeds_data(seeds_line)
+        .iter()
+        .map(|start| Range {
+            start: start.to_owned(),
+            end: start + 1,
+        })
+        .collect_vec();
+}
 
-    let mut seeds = get_seeds(lines.next().unwrap());
+fn get_seeds_data(seeds_line: &str) -> Vec<u64> {
+    return seeds_line
+        .split(":")
+        .nth(1)
+        .unwrap()
+        .split(" ")
+        .filter(|seed_str| !seed_str.is_empty())
+        .map(|seed_str| seed_str.trim().parse().unwrap())
+        .collect_vec();
+}
 
-    print!("{:#?}", seeds);
+fn parse_maps<'a, I>(lines: I) -> Vec<Map>
+where
+    I: Iterator<Item = &'a str>,
+{
+    let mut maps = vec![];
 
-    while lines.peek().is_some() {
-        while !lines.next().unwrap().contains("map:") {
+    let mut iter = lines.peekable();
+
+    while iter.peek().is_some() {
+        while !iter.next().unwrap().contains("map:") {
             // noop
         }
 
-        let mut mappings = Vec::new();
-
+        let mut entries = vec![];
         loop {
-            let line = lines.next().unwrap_or("");
+            let line = iter.next().unwrap_or("");
 
             if line.is_empty() {
                 break;
             }
 
-            mappings.push(build_mapping(line))
+            entries.push(parse_range(line))
         }
 
-        seeds = apply_mappings(seeds, mappings);
-
-        print!("{:#?}", seeds);
+        maps.push(Map { entries });
     }
 
-    return seeds.iter().min().unwrap().to_owned();
+    return maps;
 }
 
-fn get_seeds(seeds_line: &str) -> Vec<u64> {
-    return seeds_line
-        .split(":")
-        .nth(1)
-        .unwrap()
-        .trim()
-        .split(" ")
-        .map(|seed_str| seed_str.parse::<u64>().unwrap())
-        .collect_vec();
-}
+fn parse_range(line: &str) -> MapEntry {
+    let mut parts = line.split(" ");
 
-#[derive(Clone, Debug)]
-struct SeedRange {
-    start: u64,
-    length: u64,
-}
+    let destination_start = parts.next().unwrap().parse().unwrap();
+    let source_start = parts.next().unwrap().parse().unwrap();
+    let length: u64 = parts.next().unwrap().parse().unwrap();
 
-fn build_mapping(mapping_line: &str) -> Mapping {
-    println!("{mapping_line}");
+    let source_end = source_start + length - 1;
 
-    let mut mapping_definition = mapping_line
-        .trim()
-        .split(" ")
-        .map(|mappping_str| mappping_str.parse::<u64>().unwrap());
-
-    let destination_start = mapping_definition.next().unwrap();
-    let source_start = mapping_definition.next().unwrap();
-    let range_length = mapping_definition.next().unwrap();
-
-    return Mapping {
+    return MapEntry {
         destination_start,
         source_start,
-        range_length,
+        source_end,
     };
 }
 
-fn apply_mappings(seeds: Vec<u64>, mappings: Vec<Mapping>) -> Vec<u64> {
-    return seeds
+fn apply_maps_to_ranges(maps: Vec<Map>, ranges: Vec<Range>) -> Vec<Range> {
+    return maps
         .iter()
-        .map(|seed| {
-            let mapping = mappings.iter().find(|mapping| {
-                let range = mapping.source_start..mapping.source_start + mapping.range_length;
+        .fold(ranges, |ranges, map| apply_map_to_ranges(map, ranges));
+}
 
-                return range.contains(seed);
-            });
-
-            return match mapping {
-                None => seed.to_owned(),
-                Some(m) => {
-                    print!("Found mapping for {seed} - {:?}", m);
-
-                    let index = seed - m.source_start;
-                    return m.destination_start + index;
-                }
-            };
-        })
+fn apply_map_to_ranges(map: &Map, ranges: Vec<Range>) -> Vec<Range> {
+    return ranges
+        .iter()
+        .flat_map(|range| apply_map_to_range(map, range))
         .collect_vec();
 }
 
-#[derive(Debug)]
-struct Mapping {
-    destination_start: u64,
+fn apply_map_to_range(map: &Map, range: &Range) -> Vec<Range> {
+    let ranges = map
+        .entries
+        .iter()
+        .filter(|entry| is_entry_applicable_to_range(entry, range))
+        .map(|entry| apply_entry_to_range(entry, range))
+        .collect_vec();
+
+    if ranges.is_empty() {
+        return vec![range.clone()];
+    }
+
+    return ranges;
+}
+
+fn is_entry_applicable_to_range(entry: &MapEntry, range: &Range) -> bool {
+    return range.start <= entry.source_end && range.end > entry.source_start;
+}
+
+fn apply_entry_to_range(entry: &MapEntry, range: &Range) -> Range {
+    let intersection_start = u64::max(range.start, entry.source_start);
+    let intersection_end = u64::min(range.end, entry.source_end);
+
+    let start = intersection_start - entry.source_start + entry.destination_start;
+    let end = intersection_end - entry.source_start + entry.destination_start;
+
+    return Range { start, end };
+}
+
+#[derive(Copy, Clone)]
+struct Range {
+    start: u64,
+    end: u64, // inclusive
+}
+
+struct Map {
+    entries: Vec<MapEntry>,
+}
+
+struct MapEntry {
     source_start: u64,
-    range_length: u64,
+    source_end: u64,
+    destination_start: u64, // inclusive
 }
 
 #[cfg(test)]
@@ -244,11 +212,11 @@ mod tests {
 
     #[test]
     fn part_1() {
-        assert_eq!(get_lowest_location_number(INPUT), 35)
+        assert_eq!(get_lowest_location(INPUT, None), 35)
     }
 
     #[test]
     fn part_2() {
-        assert_eq!(get_lowest_location_p2(INPUT), 46)
+        assert_eq!(get_lowest_location(INPUT, Some(true)), 46)
     }
 }
