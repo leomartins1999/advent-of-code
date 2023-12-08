@@ -27,10 +27,7 @@ fn build_races(input: &str, is_single_race: Option<bool>) -> Vec<Race> {
 }
 
 fn build_single_race(input: &str) -> Race {
-    let mut lines = input.split("\n").map(|line| line.trim());
-
-    let times = extract_values(lines.next().unwrap());
-    let distances = extract_values(lines.next().unwrap());
+    let (times, distances) = get_times_and_distances(input);
 
     let time = times.iter().join("").parse().unwrap();
     let distance = distances.iter().join("").parse().unwrap();
@@ -39,10 +36,7 @@ fn build_single_race(input: &str) -> Race {
 }
 
 fn build_multiple_races(input: &str) -> Vec<Race> {
-    let mut lines = input.split("\n").map(|line| line.trim());
-
-    let times = extract_values(lines.next().unwrap());
-    let distances = extract_values(lines.next().unwrap());
+    let (times, distances) = get_times_and_distances(input);
 
     return times
         .iter()
@@ -52,6 +46,15 @@ fn build_multiple_races(input: &str) -> Vec<Race> {
             distance: distances[idx],
         })
         .collect_vec();
+}
+
+fn get_times_and_distances(input: &str) -> (Vec<u64>, Vec<u64>) {
+    let mut lines = input.split("\n").map(|line| line.trim());
+
+    let times = extract_values(lines.next().unwrap());
+    let distances = extract_values(lines.next().unwrap());
+
+    return (times, distances);
 }
 
 fn extract_values(line: &str) -> Vec<u64> {
@@ -73,9 +76,9 @@ struct Race {
 }
 
 impl Race {
-    // TODO: implement get first/last win using binary search
-    // this approach is performant enough but using binary search
-    // to get these values would probably be more performant
+    // improvement/challenge: implement get first/last win using
+    // binary search. this approach is performant enough but using
+    // binary search to get these values would be more performant
     fn get_number_of_wins(&self) -> u64 {
         return self.get_hold_time_for_last_win() - self.get_hold_time_for_first_win() + 1;
     }
