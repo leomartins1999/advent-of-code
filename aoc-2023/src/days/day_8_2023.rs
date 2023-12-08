@@ -1,15 +1,9 @@
 use itertools::Itertools;
 
 use crate::utils;
-use std::{
-    clone,
-    collections::{HashMap, HashSet},
-    iter::{self, FlatMap},
-    str::Chars,
-};
+use std::collections::{HashMap, HashSet};
 
 const START: &str = "AAA";
-const DESTINATION: &str = "ZZZ";
 
 pub fn solve() -> [u64; 2] {
     let input = utils::get_input(std::module_path!());
@@ -26,35 +20,15 @@ fn get_number_of_steps_to(input: &str, as_ghosts: Option<bool>) -> u64 {
         .map(|line| line.trim())
         .filter(|line| !line.is_empty());
 
-    let mut directions = parse_directions(lines.next().unwrap());
+    let directions = parse_directions(lines.next().unwrap());
     let map = build_map(lines);
-
-    let mut curr_positions = get_starting_positions(as_ghosts, &map);
+    let curr_positions = get_starting_positions(as_ghosts, &map);
 
     return curr_positions
         .iter()
-        .map(|pos| get_lowest_steps_to_destination(pos.clone(), map.clone(), directions.clone()))
+        .map(|pos| get_lowest_steps_to_destination(pos.clone(), &map, directions.clone()))
         .unique()
         .fold(1, |acc, step| num::integer::lcm(acc, step));
-
-    let mut cnt = 0;
-
-    while !is_at_destination(&curr_positions, as_ghosts) {
-        let direction = directions.next().unwrap();
-
-        curr_positions = HashSet::from_iter(curr_positions.iter().map(|pos| {
-            let destinations = map.get(pos).unwrap();
-            return match direction {
-                Direction::LEFT => destinations.0.clone(),
-                Direction::RIGHT => destinations.1.clone(),
-            };
-        }));
-        cnt += 1;
-
-        println!("Count: {cnt}")
-    }
-
-    return cnt;
 }
 
 fn parse_directions<'a>(line: &str) -> DirectionIterator {
@@ -63,7 +37,7 @@ fn parse_directions<'a>(line: &str) -> DirectionIterator {
         .map(|c| match c {
             'L' => Direction::LEFT,
             'R' => Direction::RIGHT,
-            _ => panic!("Unknown direction!"),
+            _ => panic!("Unknown direction '{c}'!"),
         })
         .collect_vec();
 
@@ -120,17 +94,9 @@ fn get_starting_positions(
     return HashSet::from([START.to_string()]);
 }
 
-fn is_at_destination(curr_positions: &HashSet<String>, as_ghosts: Option<bool>) -> bool {
-    if as_ghosts.unwrap_or(false) {
-        return curr_positions.iter().all(|pos| pos.ends_with("Z"));
-    }
-
-    return curr_positions.iter().all(|pos| pos == DESTINATION);
-}
-
 fn get_lowest_steps_to_destination(
     mut pos: String,
-    map: HashMap<String, (String, String)>,
+    map: &HashMap<String, (String, String)>,
     mut directions: DirectionIterator,
 ) -> u64 {
     let mut cnt = 0;
@@ -183,30 +149,6 @@ impl Iterator for DirectionIterator {
         }
 
         return Some(res.clone());
-    }
-}
-
-struct Map {
-    map: HashMap<String, (String, String)>,
-}
-
-impl Map {
-    fn new() -> Map {
-        return Map {
-            map: HashMap::new(),
-        };
-    }
-
-    fn contains(&mut self, key: &str) -> bool {
-        return self.map.contains_key(key);
-    }
-
-    fn get(&mut self, key: &str) -> (String, String) {
-        return self.map.get(key).unwrap().clone();
-    }
-
-    fn set(&mut self, key: String, destination: (String, String)) {
-        self.map.insert(key, destination);
     }
 }
 
