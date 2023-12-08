@@ -11,4 +11,6 @@ fn main() {
     println!("(2023) Day 4: {:?}", days::day_4_2023::solve());
     println!("(2023) Day 5: {:?}", days::day_5_2023::solve());
     println!("(2023) Day 6: {:?}", days::day_6_2023::solve());
+
+    println!("(2023) Day 8: {:?}", days::day_8_2023::solve());
 }
