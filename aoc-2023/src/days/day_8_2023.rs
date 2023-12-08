@@ -2,6 +2,7 @@ use itertools::Itertools;
 
 use crate::utils;
 use std::{
+    clone,
     collections::HashMap,
     iter::{self, FlatMap},
     str::Chars,
@@ -13,35 +14,40 @@ const DESTINATION: &str = "ZZZ";
 pub fn solve() -> [u32; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [get_number_of_steps_to(&input, DESTINATION), 0];
+    return [
+        get_number_of_steps_to(&input, None),
+        get_number_of_steps_to(&input, Some(true)),
+    ];
 }
 
-fn get_number_of_steps_to(input: &str, destination: &str) -> u32 {
+fn get_number_of_steps_to(input: &str, as_ghosts: Option<bool>) -> u32 {
     let mut lines = input
         .split("\n")
         .map(|line| line.trim())
         .filter(|line| !line.is_empty());
 
     let mut directions = parse_directions(lines.next().unwrap());
+    let map = build_map(lines);
 
-    let mut map = Map::new();
-
-    let mut curr = START.to_string();
+    let mut curr_positions = get_starting_positions(as_ghosts, &map);
     let mut cnt = 0;
 
-    while curr != destination {
-        while !&map.contains(&curr) {
-            let (key, destinations) = parse_map_entry(lines.next().unwrap());
-            map.set(key, destinations)
-        }
+    while !is_at_destination(&curr_positions, as_ghosts) {
+        let direction = directions.next().unwrap();
 
-        let destinations = map.get(&curr);
-
-        curr = match directions.next().unwrap() {
-            Direction::LEFT => destinations.0,
-            Direction::RIGHT => destinations.1,
-        };
+        curr_positions = curr_positions
+            .iter()
+            .map(|pos| {
+                let destinations = map.get(pos).unwrap();
+                return match direction {
+                    Direction::LEFT => destinations.0.clone(),
+                    Direction::RIGHT => destinations.1.clone(),
+                };
+            })
+            .collect_vec();
         cnt += 1;
+
+        println!("Count: {cnt}")
     }
 
     return cnt;
@@ -60,8 +66,24 @@ fn parse_directions<'a>(line: &str) -> DirectionIterator {
     return DirectionIterator::new(directions);
 }
 
-fn parse_map_entry(entry_line: &str) -> (String, (String, String)) {
-    let mut chunks = entry_line.split("=").map(|chunk| chunk.trim());
+fn build_map<'a, I>(lines: I) -> HashMap<String, (String, String)>
+where
+    I: Iterator<Item = &'a str>,
+{
+    let mut map = HashMap::new();
+
+    for (origin, destinations) in lines
+        .filter(|line| !line.is_empty())
+        .map(|line| parse_map_entry(line))
+    {
+        map.insert(origin, destinations);
+    }
+
+    return map;
+}
+
+fn parse_map_entry(line: &str) -> (String, (String, String)) {
+    let mut chunks = line.split("=").map(|chunk| chunk.trim());
 
     let key = chunks.next().unwrap();
 
@@ -76,6 +98,29 @@ fn parse_map_entry(entry_line: &str) -> (String, (String, String)) {
         key.to_string(),
         (left_destination.to_string(), right_destination.to_string()),
     );
+}
+
+fn get_starting_positions(
+    as_ghosts: Option<bool>,
+    map: &HashMap<String, (String, String)>,
+) -> Vec<String> {
+    if as_ghosts.unwrap_or(false) {
+        return map
+            .keys()
+            .filter(|pos| pos.ends_with("A"))
+            .map(|pos| pos.clone())
+            .collect_vec();
+    }
+
+    return vec![START.to_string()];
+}
+
+fn is_at_destination(curr_positions: &Vec<String>, as_ghosts: Option<bool>) -> bool {
+    if as_ghosts.unwrap_or(false) {
+        return curr_positions.iter().all(|pos| pos.ends_with("Z"));
+    }
+
+    return curr_positions.iter().all(|pos| pos == DESTINATION);
 }
 
 struct DirectionIterator {
@@ -154,7 +199,7 @@ mod tests {
         GGG = (GGG, GGG)
         ZZZ = (ZZZ, ZZZ)"#;
 
-        assert_eq!(get_number_of_steps_to(input, "ZZZ"), 2)
+        assert_eq!(get_number_of_steps_to(input, None), 2)
     }
 
     #[test]
@@ -165,11 +210,22 @@ mod tests {
         BBB = (AAA, ZZZ)
         ZZZ = (ZZZ, ZZZ)"#;
 
-        assert_eq!(get_number_of_steps_to(input, "ZZZ"), 6)
+        assert_eq!(get_number_of_steps_to(input, None), 6)
     }
 
     #[test]
-    fn part_2() {
-        // assert_eq!(get_number_of_wins(INPUT, Some(true)), 71503)
+    fn part_2_example() {
+        let input = r#"LR
+
+        11A = (11B, XXX)
+        11B = (XXX, 11Z)
+        11Z = (11B, XXX)
+        22A = (22B, XXX)
+        22B = (22C, 22C)
+        22C = (22Z, 22Z)
+        22Z = (22B, 22B)
+        XXX = (XXX, XXX)"#;
+
+        assert_eq!(get_number_of_steps_to(input, Some(true)), 6)
     }
 }
