@@ -50,10 +50,7 @@ where
 {
     let mut map = HashMap::new();
 
-    for (origin, destinations) in lines
-        .filter(|line| !line.is_empty())
-        .map(|line| parse_map_entry(line))
-    {
+    for (origin, destinations) in lines.map(|line| parse_map_entry(line)) {
         map.insert(origin, destinations);
     }
 
@@ -129,10 +126,7 @@ impl DirectionIterator {
     }
 
     fn clone(&self) -> DirectionIterator {
-        return DirectionIterator {
-            directions: self.directions.clone(),
-            curr: 0,
-        };
+        return Self::new(self.directions.clone());
     }
 }
 
