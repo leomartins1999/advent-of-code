@@ -11,50 +11,58 @@ pub fn solve() -> [u64; 2] {
     ];
 }
 
-fn get_number_of_wins(input: &str, single_race: Option<bool>) -> u64 {
-    return build_races(input, single_race)
+fn get_number_of_wins(input: &str, is_single_race: Option<bool>) -> u64 {
+    return build_races(input, is_single_race)
         .iter()
         .map(|race| race.get_number_of_wins())
         .fold(1, |acc, wins| acc * wins);
 }
 
-fn build_races(input: &str, single_race: Option<bool>) -> Vec<Race> {
+fn build_races(input: &str, is_single_race: Option<bool>) -> Vec<Race> {
+    if is_single_race.unwrap_or(false) {
+        return vec![build_single_race(input)];
+    }
+
+    return build_multiple_races(input);
+}
+
+fn build_single_race(input: &str) -> Race {
     let mut lines = input.split("\n").map(|line| line.trim());
 
     let times = extract_values(lines.next().unwrap());
     let distances = extract_values(lines.next().unwrap());
 
-    if single_race.unwrap_or(false) {
-        let time = times.iter().join("").parse().unwrap();
-        let distance = distances.iter().join("").parse().unwrap();
+    let time = times.iter().join("").parse().unwrap();
+    let distance = distances.iter().join("").parse().unwrap();
 
-        return vec![Race { time, distance }];
-    } else {
-        return times
-            .iter()
-            .enumerate()
-            .map(|(idx, time)| Race {
-                time: time.clone(),
-                distance: distances[idx],
-            })
-            .collect_vec();
-    }
+    return Race { time, distance };
+}
+
+fn build_multiple_races(input: &str) -> Vec<Race> {
+    let mut lines = input.split("\n").map(|line| line.trim());
+
+    let times = extract_values(lines.next().unwrap());
+    let distances = extract_values(lines.next().unwrap());
+
+    return times
+        .iter()
+        .enumerate()
+        .map(|(idx, time)| Race {
+            time: time.clone(),
+            distance: distances[idx],
+        })
+        .collect_vec();
 }
 
 fn extract_values(line: &str) -> Vec<u64> {
     return line
         .split(":")
-        .skip(1)
-        .next()
+        .nth(1)
         .unwrap()
         .trim()
         .split(" ")
         .filter(|value_str| !value_str.is_empty())
-        .map(|value_str| {
-            println!("{line} - {value_str}");
-
-            return value_str.parse().unwrap();
-        })
+        .map(|value_str| value_str.parse().unwrap())
         .collect_vec();
 }
 
@@ -65,26 +73,31 @@ struct Race {
 }
 
 impl Race {
+    // TODO: implement get first/last win using binary search
+    // this approach is performant enough but using binary search
+    // to get these values would probably be more performant
     fn get_number_of_wins(&self) -> u64 {
-        println!("Race {:?}", self);
+        return self.get_hold_time_for_last_win() - self.get_hold_time_for_first_win() + 1;
+    }
 
-        let mut win_counter = 0;
-        let mut won_at_least_once = false;
-
+    fn get_hold_time_for_first_win(&self) -> u64 {
         for hold_time in 1..self.time {
-            let won = self.is_win(hold_time);
-
-            println!("-> Won with {hold_time} hold? {won}");
-
-            if won {
-                win_counter += 1;
-                won_at_least_once = true;
-            } else if won_at_least_once {
-                break;
+            if self.is_win(hold_time) {
+                return hold_time;
             }
         }
 
-        return win_counter;
+        return 0;
+    }
+
+    fn get_hold_time_for_last_win(&self) -> u64 {
+        for hold_time in (1..self.time).rev() {
+            if self.is_win(hold_time) {
+                return hold_time;
+            }
+        }
+
+        return 0;
     }
 
     fn is_win(&self, hold_time: u64) -> bool {
