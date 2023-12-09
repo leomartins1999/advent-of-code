@@ -4,7 +4,10 @@ use itertools::Itertools;
 pub fn solve() -> [i64; 2] {
     let input = utils::get_input(std::module_path!());
 
-    return [calculate_next_values(&input), 0];
+    return [
+        calculate_next_values(&input),
+        calculate_previous_values(&input),
+    ];
 }
 
 fn calculate_next_values(input: &str) -> i64 {
@@ -12,6 +15,19 @@ fn calculate_next_values(input: &str) -> i64 {
         .iter()
         .map(|history| {
             let res = calculate_next_value(history);
+
+            println!("{:?} - {res}", history);
+
+            return res;
+        })
+        .sum();
+}
+
+fn calculate_previous_values(input: &str) -> i64 {
+    return parse_histories(input)
+        .iter()
+        .map(|history| {
+            let res = calculate_next_value(&history.iter().rev().map(|v| v.clone()).collect_vec());
 
             println!("{:?} - {res}", history);
 
@@ -79,5 +95,21 @@ mod tests {
         let input = r#"0 3 6 9 12 15"#;
 
         assert_eq!(calculate_next_values(input), 18)
+    }
+
+    #[test]
+    fn part_2() {
+        let input = r#"0 3 6 9 12 15
+        1 3 6 10 15 21
+        10 13 16 21 30 45"#;
+
+        assert_eq!(calculate_previous_values(input), 2)
+    }
+
+    #[test]
+    fn part_2_example_1() {
+        let input = r#"0 3 6 9 12 15"#;
+
+        assert_eq!(calculate_previous_values(input), -3)
     }
 }
