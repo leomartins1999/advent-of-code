@@ -13,13 +13,7 @@ pub fn solve() -> [i64; 2] {
 fn calculate_next_values(input: &str) -> i64 {
     return parse_histories(input)
         .iter()
-        .map(|history| {
-            let res = calculate_next_value(history);
-
-            println!("{:?} - {res}", history);
-
-            return res;
-        })
+        .map(|history| calculate_next_value(history))
         .sum();
 }
 
@@ -27,12 +21,13 @@ fn calculate_previous_values(input: &str) -> i64 {
     return parse_histories(input)
         .iter()
         .map(|history| {
-            let res = calculate_next_value(&history.iter().rev().map(|v| v.clone()).collect_vec());
-
-            println!("{:?} - {res}", history);
-
-            return res;
+            history
+                .iter()
+                .rev()
+                .map(|value| value.clone())
+                .collect_vec()
         })
+        .map(|history| calculate_next_value(&history))
         .sum();
 }
 
@@ -47,8 +42,8 @@ fn parse_histories(input: &str) -> Vec<Vec<i64>> {
 fn parse_history(line: &str) -> Vec<i64> {
     return line
         .split(" ")
-        .filter(|number| !number.is_empty())
-        .map(|number| number.parse().unwrap())
+        .filter(|value_str| !value_str.is_empty())
+        .map(|value_str| value_str.parse().unwrap())
         .collect();
 }
 
@@ -58,8 +53,6 @@ fn calculate_next_value(history: &Vec<i64>) -> i64 {
     }
 
     let delta = calculate_delta_history(history);
-
-    println!("{:?} - {:?}", history, delta);
 
     return calculate_next_value(&delta) + history.last().unwrap();
 }
