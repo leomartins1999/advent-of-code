@@ -1,0 +1,25 @@
+name: AoC 2024
+
+on:
+  pull_request:
+    paths:
+      - 'aoc-2024/**'
+
+jobs:
+  aoc-2024:
+    name: AoC 2024
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aoc-2024
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Run KTLint
+        run: ./gradlew ktlintCheck
+      - name: Run tests
+        run: ./gradlew test -i
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "**/build/test-results/test/*.xml"
