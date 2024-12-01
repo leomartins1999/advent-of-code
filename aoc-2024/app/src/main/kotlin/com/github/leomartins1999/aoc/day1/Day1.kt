@@ -1,5 +1,6 @@
 package com.github.leomartins1999.aoc.day1
 
+import com.github.leomartins1999.aoc.Day
 import kotlin.math.absoluteValue
 
 fun main() {
@@ -13,15 +14,15 @@ fun main() {
 
 class Day1(
     private val input: String
-) {
-    fun part1(): Int {
+): Day {
+    override fun part1(): Int {
         val lists = parseInput()
         val comparisonResults = compareLists(lists)
 
         return comparisonResults.sum()
     }
 
-    fun part2(): Int {
+    override fun part2(): Int {
         val lists = parseInput()
         val similarityResults = getSimilarityResults(lists)
 
