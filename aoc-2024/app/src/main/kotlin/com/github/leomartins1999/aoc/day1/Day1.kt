@@ -3,18 +3,7 @@ package com.github.leomartins1999.aoc.day1
 import com.github.leomartins1999.aoc.Day
 import kotlin.math.absoluteValue
 
-fun main() {
-    val input = Day1::class.java.getResource("/inputs/day1.txt")!!.readText()
-    val part1Result = Day1(input).part1()
-    val part2Result = Day1(input).part2()
-
-    println("Part 1: $part1Result")
-    println("Part 2: $part2Result")
-}
-
-class Day1(
-    private val input: String
-): Day {
+class Day1(private val input: String) : Day {
     override fun part1(): Int {
         val lists = parseInput()
         val comparisonResults = compareLists(lists)
@@ -29,20 +18,22 @@ class Day1(
         return similarityResults.sum()
     }
 
-    private fun parseInput(): List<List<Int>> {
-        val lines = input
-            .split("\n")
-            .filter { it.isNotBlank() }
-            .map { parseLine(it) }
+    private fun parseInput(): Pair<List<Int>, List<Int>> {
+        val lines =
+            input
+                .split("\n")
+                .filter { it.isNotBlank() }
+                .map { parseLine(it) }
 
-        val nrOfLists = lines.first().size
+        val (first, second) =
+            listOf(0, 1)
+                .map { listIdx ->
+                    lines
+                        .map { it[listIdx] }
+                        .sorted()
+                }
 
-        return (0 until nrOfLists)
-            .map { listIdx ->
-                val elems = lines.map { it[listIdx] }
-
-                elems.sorted()
-            }
+        return Pair(first, second)
     }
 
     private fun parseLine(line: String): List<Int> {
@@ -52,17 +43,14 @@ class Day1(
             .map { it.toInt() }
     }
 
-    private fun compareLists(lists: List<List<Int>>): List<Int> {
-        val (first, second) = lists
-
-        return first.zip(second) { firstValue, secondValue -> (firstValue - secondValue).absoluteValue }
+    private fun compareLists(lists: Pair<List<Int>, List<Int>>): List<Int> {
+        return lists.first.zip(lists.second) { firstValue, secondValue -> (firstValue - secondValue).absoluteValue }
     }
 
-    private fun getSimilarityResults(lists: List<List<Int>>): List<Int> {
-        val (first, second) = lists
-        val secondOccurrenceMap = second.groupingBy { it }.eachCount()
+    private fun getSimilarityResults(lists: Pair<List<Int>, List<Int>>): List<Int> {
+        val secondOccurrenceMap = lists.second.groupingBy { it }.eachCount()
 
-        return first.map { value ->
+        return lists.first.map { value ->
             val nrOfOccurrences = secondOccurrenceMap[value] ?: 0
 
             value * nrOfOccurrences
