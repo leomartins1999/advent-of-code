@@ -9,10 +9,10 @@ class AoC2024 {
         println("Welcome to AoC 2024! 🎉")
 
         val days = loadDays()
-        days.forEachIndexed { index, day ->
+        days.forEach { day ->
             println("=".repeat(25))
-            println("Day ${index + 1} (Part 1): ${day.part1()}")
-            println("Day ${index + 1} (Part 2): ${day.part2()}")
+            println("${day::class.simpleName} (Part 1): ${day.part1()}")
+            println("${day::class.simpleName} (Part 2): ${day.part2()}")
         }
     }
 
