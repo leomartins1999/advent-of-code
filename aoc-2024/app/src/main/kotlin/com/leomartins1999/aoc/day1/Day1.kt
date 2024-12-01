@@ -5,8 +5,10 @@ import kotlin.math.absoluteValue
 fun main() {
     val input = Day1::class.java.getResource("/inputs/day1.txt")!!.readText()
     val part1Result = Day1(input).part1()
+    val part2Result = Day1(input).part2()
 
     println("Part 1: $part1Result")
+    println("Part 2: $part2Result")
 }
 
 class Day1(
@@ -17,6 +19,13 @@ class Day1(
         val comparisonResults = compareLists(lists)
 
         return comparisonResults.sum()
+    }
+
+    fun part2(): Int {
+        val lists = parseInput()
+        val similarityResults = getSimilarityResults(lists)
+
+        return similarityResults.sum()
     }
 
     private fun parseInput(): List<List<Int>> {
@@ -46,5 +55,16 @@ class Day1(
         val (first, second) = lists
 
         return first.zip(second) { firstValue, secondValue -> (firstValue - secondValue).absoluteValue }
+    }
+
+    private fun getSimilarityResults(lists: List<List<Int>>): List<Int> {
+        val (first, second) = lists
+        val secondOccurrenceMap = second.groupingBy { it }.eachCount()
+
+        return first.map { value ->
+            val nrOfOccurrences = secondOccurrenceMap[value] ?: 0
+
+            value * nrOfOccurrences
+        }
     }
 }
