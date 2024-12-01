@@ -5,3 +5,7 @@
 build
 
 .idea
+
+.kotlin
+
+app/src/main/resources/**
