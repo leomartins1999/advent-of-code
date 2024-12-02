@@ -1,19 +1,18 @@
 package com.github.leomartins1999.aoc.day2
 
-import com.github.leomartins1999.aoc.day1.Day1
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Day2Test {
-
-    private val input = """
+    private val input =
+        """
         7 6 4 2 1
         1 2 7 8 9
         9 7 6 2 1
         1 3 2 4 5
         8 6 4 4 1
         1 3 6 7 9
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun part1Example() {
@@ -22,62 +21,68 @@ class Day2Test {
 
     @Test
     fun part1First2ElemsEqual() {
-        val input = """
+        val input =
+            """
             1 1 2 3 4
             1 2 3 4
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(1, Day2(input).part1())
     }
 
     @Test
     fun part1NewLineAtTheEnd() {
-        val input = """
+        val input =
+            """
             1 2 3 4 5
 
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(1, Day2(input).part1())
     }
 
     @Test
     fun part1BigDifferenceBetweenFirst2() {
-        val input = """
+        val input =
+            """
             1 10 12 13 14
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }
 
     @Test
     fun part1MoreInputs1() {
-        val input = """
+        val input =
+            """
             65 68 71 72 71
             31 34 36 37 37
             80 83 84 86 87 90 92 96
             30 33 36 39 45
             21 22 25 23 24
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }
 
     @Test
     fun part1MoreInputs2() {
-        val input = """
+        val input =
+            """
             66 68 69 71 72 71 72 69
             2 3 5 4 4
             77 78 77 79 82 83 86 90
             6 9 10 7 9 12 17
             25 27 28 28 30 32
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }
 
     @Test
     fun part1MoreInputs3() {
-        val input = """
+        val input =
+            """
             61 63 66 68 68 66
             51 54 54 57 60 60
             50 52 52 53 56 60
@@ -86,14 +91,15 @@ class Day2Test {
             36 38 41 42 45 49 47
             56 59 63 64 64
             26 29 32 36 40
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }
 
     @Test
     fun part1MoreInputs4() {
-        val input = """
+        val input =
+            """
             70 72 74 75 77 80 84 89
             81 83 88 89 92 95 96
             79 80 85 87 89 92 93 90
@@ -103,14 +109,15 @@ class Day2Test {
             14 11 14 17 18 19
             43 40 41 44 47 50 51 50
             31 30 32 35 35
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }
 
     @Test
     fun part1MoreInputs5() {
-        val input = """
+        val input =
+            """
             43 40 42 43 46 49 51 55
             9 7 9 12 15 17 18 23
             74 71 74 71 73 76 79 80
@@ -120,7 +127,7 @@ class Day2Test {
             45 43 44 47 45 50
             42 39 41 43 43 45 48
             97 94 96 98 98 99 97
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals(0, Day2(input).part1())
     }

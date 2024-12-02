@@ -4,7 +4,6 @@ import com.github.leomartins1999.aoc.Day
 import kotlin.math.absoluteValue
 
 class Day2(private val input: String) : Day {
-
     override fun part1(): Int {
         val reports = parseInput()
 
@@ -25,17 +24,21 @@ class Day2(private val input: String) : Day {
     }
 
     private fun parseLine(line: String): Report {
-        val levels = line
-            .split(" ")
-            .filter { it.isNotBlank() }
-            .map { it.toInt() }
+        val levels =
+            line
+                .split(" ")
+                .filter { it.isNotBlank() }
+                .map { it.toInt() }
 
         return Report(levels)
     }
 }
 
 data class Report(val levels: List<Int>) {
-    fun isValid(maxDifference: Int = 3, tolerateOneFailure: Boolean = false): Boolean {
+    fun isValid(
+        maxDifference: Int = 3,
+        tolerateOneFailure: Boolean = false,
+    ): Boolean {
         if (areLevelsValid(levels, maxDifference)) return true
         if (!tolerateOneFailure) return false
 
@@ -49,7 +52,10 @@ data class Report(val levels: List<Int>) {
         return false
     }
 
-    private fun areLevelsValid(levels: List<Int>, maxDifference: Int): Boolean {
+    private fun areLevelsValid(
+        levels: List<Int>,
+        maxDifference: Int,
+    ): Boolean {
         val levelsCopy = levels.toMutableList()
         val first = levelsCopy.removeFirst()
         val second = levelsCopy.removeFirst()
@@ -70,5 +76,8 @@ data class Report(val levels: List<Int>) {
         return true
     }
 
-    private fun dif(first: Int, second: Int) = (first - second).absoluteValue
+    private fun dif(
+        first: Int,
+        second: Int,
+    ) = (first - second).absoluteValue
 }
