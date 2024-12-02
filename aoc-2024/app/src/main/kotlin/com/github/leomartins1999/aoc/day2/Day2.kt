@@ -11,6 +11,12 @@ class Day2(private val input: String) : Day {
         return reports.count { it.isValid() }
     }
 
+    override fun part2(): Int {
+        val reports = parseInput()
+
+        return reports.count { it.isValid(tolerateOneFailure = true) }
+    }
+
     private fun parseInput(): List<Report> {
         return input
             .lines()
@@ -29,7 +35,7 @@ class Day2(private val input: String) : Day {
 }
 
 data class Report(val levels: List<Int>) {
-    fun isValid(maxDifference: Int = 3): Boolean {
+    fun isValid(maxDifference: Int = 3, tolerateOneFailure: Boolean = false): Boolean {
         return areLevelsValid(levels, maxDifference)
     }
 
