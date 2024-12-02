@@ -36,7 +36,17 @@ class Day2(private val input: String) : Day {
 
 data class Report(val levels: List<Int>) {
     fun isValid(maxDifference: Int = 3, tolerateOneFailure: Boolean = false): Boolean {
-        return areLevelsValid(levels, maxDifference)
+        if (areLevelsValid(levels, maxDifference)) return true
+        if (!tolerateOneFailure) return false
+
+        levels.indices.forEach { idx ->
+            val levelsCopy = levels.toMutableList()
+            levelsCopy.removeAt(idx)
+
+            if (areLevelsValid(levelsCopy, maxDifference)) return true
+        }
+
+        return false
     }
 
     private fun areLevelsValid(levels: List<Int>, maxDifference: Int): Boolean {
