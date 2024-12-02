@@ -29,11 +29,16 @@ class Day2(private val input: String) : Day {
 }
 
 data class Report(val levels: List<Int>) {
-    fun isValid(): Boolean {
+    fun isValid(maxDifference: Int = 3): Boolean {
+        return areLevelsValid(levels, maxDifference)
+    }
+
+    private fun areLevelsValid(levels: List<Int>, maxDifference: Int): Boolean {
         val levelsCopy = levels.toMutableList()
         val first = levelsCopy.removeFirst()
         val second = levelsCopy.removeFirst()
-        if (first == second || (first - second).absoluteValue > 3) return false
+
+        if (first == second || dif(first, second) > maxDifference) return false
 
         val descending = first > second
 
@@ -41,13 +46,13 @@ data class Report(val levels: List<Int>) {
         levelsCopy.forEach { current ->
             if (descending && current >= previous) return false
             if (!descending && current <= previous) return false
-
-            val dif = (current - previous).absoluteValue
-            if (dif > 3) return false
+            if (dif(current, previous) > maxDifference) return false
 
             previous = current
         }
 
         return true
     }
+
+    private fun dif(first: Int, second: Int) = (first - second).absoluteValue
 }
