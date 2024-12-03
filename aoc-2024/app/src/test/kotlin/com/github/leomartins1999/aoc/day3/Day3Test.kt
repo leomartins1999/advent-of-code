@@ -10,4 +10,11 @@ class Day3Test {
 
         assertEquals(161, Day3(input).part1())
     }
+
+    @Test
+    fun part2Example() {
+        val input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+
+        assertEquals(48, Day3(input).part2())
+    }
 }
