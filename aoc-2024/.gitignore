@@ -8,4 +8,4 @@ build
 
 .kotlin
 
-app/src/main/resources/**
+app/src/main/resources/inputs/*.txt
