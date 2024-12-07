@@ -11,30 +11,43 @@ class Day7(private val input: String) : Day {
             .sumOf(Equation::result)
     }
 
-    private fun parseInput(): List<Equation> {
+    override fun part2(): Long {
+        val equations = parseInput(true)
+
+        return equations
+            .filter(Equation::isValid)
+            .sumOf(Equation::result)
+    }
+
+    private fun parseInput(withConcatenation: Boolean = false): List<Equation> {
         return input
             .lines()
             .filter(String::isNotEmpty)
-            .map(::parseEquation)
+            .map { parseEquation(it, withConcatenation) }
     }
 
-    private fun parseEquation(line: String): Equation {
+    private fun parseEquation(
+        line: String,
+        withConcatenation: Boolean,
+    ): Equation {
         val (resultStr, elementsStr) = line.split(":")
 
-        val result = resultStr
-            .trim()
-            .toLong()
+        val result =
+            resultStr
+                .trim()
+                .toLong()
 
-        val elements = elementsStr
-            .split(" ")
-            .filter(String::isNotEmpty)
-            .map(String::toLong)
+        val elements =
+            elementsStr
+                .split(" ")
+                .filter(String::isNotEmpty)
+                .map(String::toLong)
 
-        return Equation(result, elements)
+        return Equation(result, elements, withConcatenation)
     }
 }
 
-class Equation(val result: Long, private val elements: List<Long>) {
+class Equation(val result: Long, private val elements: List<Long>, private var withConcatenation: Boolean) {
     fun isValid(): Boolean {
         return evaluate().any { it == result }
     }
@@ -48,15 +61,18 @@ class Equation(val result: Long, private val elements: List<Long>) {
                 return@forEach
             }
 
-            results = results.flatMap { res ->
-                listOf(
-                    res + elem,
-                    res * elem
-                )
-            }.toMutableList()
+            results =
+                results.flatMap { res ->
+                    val tmpResults = mutableListOf(res + elem, res * elem)
+
+                    if (withConcatenation) {
+                        tmpResults.add("$res$elem".toLong())
+                    }
+
+                    tmpResults
+                }.toMutableList()
         }
 
         return results
     }
 }
-
