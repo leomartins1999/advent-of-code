@@ -15,6 +15,8 @@ class Day6(private val input: String) : Day {
         return map.paradoxes().count()
     }
 
+    override fun slowParts() = setOf(2)
+
     private fun parseInput(): LabMap {
         val lines =
             input

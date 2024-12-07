@@ -11,8 +11,15 @@ class AoC2024 {
         val days = loadDays()
         days.forEach { day ->
             println("=".repeat(25))
-            println("${day::class.simpleName} (Part 1): ${day.part1()}")
-            println("${day::class.simpleName} (Part 2): ${day.part2()}")
+
+            val runSlowParts = System.getenv("RUN_SLOW")?.toBoolean() ?: false
+
+            val slowParts = day.slowParts()
+            val part1Result = if (slowParts.contains(1) && !runSlowParts) "⚠️🐢️ SKIPPED 🐢⚠️" else day.part1()
+            val part2Result = if (slowParts.contains(2) && !runSlowParts) "⚠️🐢️ SKIPPED 🐢⚠️" else day.part2()
+
+            println("${day::class.simpleName} (Part 1): $part1Result")
+            println("${day::class.simpleName} (Part 2): $part2Result")
         }
     }
 
