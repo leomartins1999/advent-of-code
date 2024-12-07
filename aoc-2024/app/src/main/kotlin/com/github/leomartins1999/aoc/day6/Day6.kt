@@ -9,6 +9,12 @@ class Day6(private val input: String) : Day {
         return map.visitedPositions().count()
     }
 
+    override fun part2(): Int {
+        val map = parseInput()
+
+        return map.paradoxes().count()
+    }
+
     private fun parseInput(): LabMap {
         val lines =
             input
@@ -21,17 +27,25 @@ class Day6(private val input: String) : Day {
 }
 
 class LabMap(private val map: List<List<Char>>) {
-    private val startingPosition = '^'
     private val obstacle = '#'
+    private val blankSpace = '.'
+    private val startingPosition = '^'
+
+    private val startingDirection = Direction.UP
+
+    fun paradoxes(): List<LabMap> {
+        return allObstacleVariations()
+            .filter(LabMap::isParadox)
+    }
 
     fun visitedPositions(): Set<Position> {
         var currentPosition = findStartingPosition()
-        var currentDirection = Direction.UP
+        var currentDirection = startingDirection
 
-        val visited = mutableSetOf<Position>()
+        val visited = mutableSetOf<Pair<Position, Direction>>()
 
         while (isWithinBounds(currentPosition)) {
-            visited.add(currentPosition)
+            visited.add(currentPosition to currentDirection)
 
             val next = currentPosition.walk(currentDirection)
             if (!isWithinBounds(next)) break
@@ -42,9 +56,48 @@ class LabMap(private val map: List<List<Char>>) {
             }
 
             currentPosition = next
+
+            if (inLoop(currentPosition, currentDirection, visited)) throw ParadoxException()
         }
 
-        return visited
+        return visited.map { it.first }.toSet()
+    }
+
+    private fun isParadox(): Boolean {
+        return try {
+            visitedPositions()
+            false
+        } catch (e: ParadoxException) {
+            true
+        }
+    }
+
+    private fun allObstacleVariations(): List<LabMap> {
+        val variations = mutableListOf<LabMap>()
+
+        (0 until height()).forEach { y ->
+            (0 until width()).forEach { x ->
+                if (valueOf(Position(x, y)) == blankSpace) {
+                    val cpy =
+                        map
+                            .toMutableList()
+                            .map { it.toMutableList() }
+                    cpy[y][x] = obstacle
+
+                    variations.add(LabMap(cpy))
+                }
+            }
+        }
+
+        return variations
+    }
+
+    private fun inLoop(
+        position: Position,
+        direction: Direction,
+        visited: Set<Pair<Position, Direction>>,
+    ): Boolean {
+        return visited.contains(position to direction)
     }
 
     private fun findStartingPosition(): Position {
@@ -65,6 +118,8 @@ class LabMap(private val map: List<List<Char>>) {
 
     private fun height() = map.size
 }
+
+class ParadoxException : RuntimeException("Paradox detected!")
 
 enum class Direction {
     UP,

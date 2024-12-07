@@ -22,4 +22,9 @@ class Day6Test {
     fun part1Example() {
         assertEquals(41, Day6(input).part1())
     }
+
+    @Test
+    fun part2Example() {
+        assertEquals(6, Day6(input).part2())
+    }
 }
