@@ -7,6 +7,10 @@ plugins {
     kotlin("jvm") version "2.1.0"
 }
 
+kotlin {
+    jvmToolchain(23)
+}
+
 allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
