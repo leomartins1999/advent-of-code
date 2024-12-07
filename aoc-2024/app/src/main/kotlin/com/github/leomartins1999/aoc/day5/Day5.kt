@@ -12,15 +12,27 @@ class Day5(private val input: String) : Day {
             .sumOf { it.middleUpdate() }
     }
 
+    override fun part2(): Any {
+        val (rules, updates) = parseInput()
+        val validator = PageUpdateValidator(rules)
+        val fixer = PageUpdateFixer(validator)
+
+        return updates
+            .filterNot { validator.call(it) }
+            .map { fixer.fix(it) }
+            .sumOf { it.middleUpdate() }
+    }
+
     private fun parseInput(): Pair<List<PageOrderingRule>, List<PageUpdate>> {
         val lines = input.lines()
         val indexOfEmptyLine = lines.indexOfFirst { it.isBlank() }
 
         val rules = lines.subList(0, indexOfEmptyLine).map { parseRule(it) }
-        val updates = lines
-            .subList(indexOfEmptyLine + 1, lines.size)
-            .filter { it.isNotEmpty() }
-            .map { parseUpdate(it) }
+        val updates =
+            lines
+                .subList(indexOfEmptyLine + 1, lines.size)
+                .filter { it.isNotEmpty() }
+                .map { parseUpdate(it) }
 
         return rules to updates
     }
@@ -37,16 +49,18 @@ class Day5(private val input: String) : Day {
 }
 
 data class PageOrderingRule(val page: Int, val beforePage: Int)
+
 data class PageUpdate(val updates: List<Int>) {
     fun middleUpdate(): Int {
         return updates[updates.size / 2]
     }
 }
 
-class PageUpdateValidator(private val rules: List<PageOrderingRule>) {
-    private val pageToBeforePages = rules
-        .groupBy({ it.page }, { it.beforePage })
-        .mapValues { it.value.toSet() }
+class PageUpdateValidator(rules: List<PageOrderingRule>) {
+    private val pageToBeforePages =
+        rules
+            .groupBy({ it.page }, { it.beforePage })
+            .mapValues { it.value.toSet() }
 
     fun call(update: PageUpdate): Boolean {
         val pages = mutableSetOf<Int>()
@@ -59,5 +73,27 @@ class PageUpdateValidator(private val rules: List<PageOrderingRule>) {
         }
 
         return true
+    }
+}
+
+class PageUpdateFixer(private val validator: PageUpdateValidator) {
+    fun fix(update: PageUpdate): PageUpdate {
+        val pages = mutableListOf<Int>()
+
+        update.updates.forEach pageLoop@{ page ->
+            (pages.count() downTo 0).forEach { idx ->
+                val cpy = pages.toMutableList()
+                cpy.add(idx, page)
+
+                if (validator.call(PageUpdate(cpy))) {
+                    pages.add(idx, page)
+                    return@pageLoop
+                }
+            }
+
+            throw RuntimeException("Could not place '$page' correctly on $pages!")
+        }
+
+        return PageUpdate(pages)
     }
 }
