@@ -16,10 +16,11 @@ class Day8(private val input: String) : Day {
     }
 
     private fun parseInput(withResonantHarmonics: Boolean = false): AntennaMap {
-        val map = input
-            .lines()
-            .filter(String::isNotBlank)
-            .map { it.toList() }
+        val map =
+            input
+                .lines()
+                .filter(String::isNotBlank)
+                .map { it.toList() }
 
         return AntennaMap(map, withResonantHarmonics)
     }
@@ -65,13 +66,19 @@ class AntennaMap(private val map: List<List<Char>>, private val withResonantHarm
         return antinodePositions
     }
 
-    private fun getPairAntinodes(first: Position, second: Position): Set<Position> {
+    private fun getPairAntinodes(
+        first: Position,
+        second: Position,
+    ): Set<Position> {
         val dPos = Position(second.x - first.x, second.y - first.y)
 
         return getPositionAntinode(second, dPos) + getPositionAntinode(first, dPos.inverse())
     }
 
-    private fun getPositionAntinode(position: Position, dPos: Position): Set<Position> {
+    private fun getPositionAntinode(
+        position: Position,
+        dPos: Position,
+    ): Set<Position> {
         val positionAntinodes = mutableSetOf<Position>()
         if (withResonantHarmonics) positionAntinodes.add(position)
 
@@ -86,10 +93,10 @@ class AntennaMap(private val map: List<List<Char>>, private val withResonantHarm
         return positionAntinodes
     }
 
-    private fun isValidPosition(position: Position) =
-        position.x in 0 until width() && position.y in 0 until height()
+    private fun isValidPosition(position: Position) = position.x in 0 until width() && position.y in 0 until height()
 
     private fun width() = map.first().size
+
     private fun height() = map.size
 }
 
