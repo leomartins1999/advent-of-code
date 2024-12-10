@@ -4,10 +4,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Day9Test {
+    private val input = "2333133121414131402"
+
     @Test
     fun part1Example() {
-        val input = "2333133121414131402"
-
         assertEquals(1928, Day9(input).part1())
+    }
+
+    @Test
+    fun part2Example() {
+        assertEquals(2858, Day9(input).part2())
     }
 }

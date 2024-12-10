@@ -11,6 +11,14 @@ class Day9(private val input: String) : Day {
         return diskMap.checksum()
     }
 
+    override fun part2(): Long {
+        val diskMap = parseInput()
+
+        diskMap.compactKeepingFiles()
+
+        return diskMap.checksum()
+    }
+
     private fun parseInput(): DiskMap {
         var isFreeSpace = false
         var idx = 0
@@ -40,11 +48,9 @@ class DiskMap(private val blocks: List<Block>) {
         var startPtr = 0
         var endPtr = blocks.size - 1
 
-        while (true) {
+        while (startPtr < endPtr) {
             val startBlock = blocks[startPtr]
             val endBlock = blocks[endPtr]
-
-            if (startPtr >= endPtr) break
 
             if (startBlock.isFull()) {
                 startPtr++
@@ -64,13 +70,39 @@ class DiskMap(private val blocks: List<Block>) {
         }
     }
 
+    fun compactKeepingFiles() {
+//        println(inspect())
+
+        (blocks.size - 1 downTo 0).forEach endPtrLoop@ { endPtr ->
+            val endBlock = blocks[endPtr]
+
+            (0 until endPtr).forEach { startPtr ->
+                if(endBlock.isEmpty()) return@endPtrLoop
+
+                val startBlock = blocks[startPtr]
+
+                if(endBlock.fitsIn(startBlock)) {
+                    while(!endBlock.isEmpty()) {
+                        startBlock.push(endBlock.pop())
+                    }
+
+//                    println(inspect())
+                }
+            }
+        }
+    }
+
     fun checksum(): Long {
         return blocks
             .flatMap(Block::value)
             .mapIndexed { index, value -> index.toLong() * value }
             .sum()
     }
-}
+
+    fun inspect(): String {
+        return blocks.map(Block::inspect).joinToString("")
+    }
+ }
 
 data class Block(val length: Int, val values: MutableList<Int> = mutableListOf()) {
     fun push(value: Int) = values.addLast(value)
@@ -78,5 +110,19 @@ data class Block(val length: Int, val values: MutableList<Int> = mutableListOf()
     fun isFull() = values.size == length
     fun isEmpty() = values.isEmpty()
     fun freeSpace() = length - values.size
-    fun value() = values
+    fun value(): List<Int> {
+        val vals = values.toMutableList()
+
+        repeat(freeSpace()) { vals.add(0) }
+
+        return vals
+    }
+
+    fun fitsIn(other: Block) = length <= other.freeSpace()
+
+    fun inspect(): String {
+        val str = values.joinToString("")
+
+        return str + ".".repeat(freeSpace())
+    }
 }
