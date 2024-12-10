@@ -23,21 +23,22 @@ class Day9(private val input: String) : Day {
         var isFreeSpace = false
         var idx = 0
 
-        val blocks = input
-            .toCharArray()
-            .map(Character::getNumericValue)
-            .map { length ->
-                if (isFreeSpace) {
-                    val blk = Block(length)
-                    isFreeSpace = false
-                    blk
-                } else {
-                    val blk = Block(length, MutableList(length) { idx })
-                    isFreeSpace = true
-                    idx++
-                    blk
+        val blocks =
+            input
+                .toCharArray()
+                .map(Character::getNumericValue)
+                .map { length ->
+                    if (isFreeSpace) {
+                        val blk = Block(length)
+                        isFreeSpace = false
+                        blk
+                    } else {
+                        val blk = Block(length, MutableList(length) { idx })
+                        isFreeSpace = true
+                        idx++
+                        blk
+                    }
                 }
-            }
 
         return DiskMap(blocks)
     }
@@ -73,16 +74,16 @@ class DiskMap(private val blocks: List<Block>) {
     fun compactKeepingFiles() {
 //        println(inspect())
 
-        (blocks.size - 1 downTo 0).forEach endPtrLoop@ { endPtr ->
+        (blocks.size - 1 downTo 0).forEach endPtrLoop@{ endPtr ->
             val endBlock = blocks[endPtr]
 
             (0 until endPtr).forEach { startPtr ->
-                if(endBlock.isEmpty()) return@endPtrLoop
+                if (endBlock.isEmpty()) return@endPtrLoop
 
                 val startBlock = blocks[startPtr]
 
-                if(endBlock.fitsIn(startBlock)) {
-                    while(!endBlock.isEmpty()) {
+                if (endBlock.fitsIn(startBlock)) {
+                    while (!endBlock.isEmpty()) {
                         startBlock.push(endBlock.pop())
                     }
 
@@ -102,14 +103,19 @@ class DiskMap(private val blocks: List<Block>) {
     fun inspect(): String {
         return blocks.map(Block::inspect).joinToString("")
     }
- }
+}
 
 data class Block(val length: Int, val values: MutableList<Int> = mutableListOf()) {
     fun push(value: Int) = values.addLast(value)
+
     fun pop() = values.removeLast()
+
     fun isFull() = values.size == length
+
     fun isEmpty() = values.isEmpty()
+
     fun freeSpace() = length - values.size
+
     fun value(): List<Int> {
         val vals = values.toMutableList()
 
