@@ -72,8 +72,6 @@ class DiskMap(private val blocks: List<Block>) {
     }
 
     fun compactKeepingFiles() {
-//        println(inspect())
-
         (blocks.size - 1 downTo 0).forEach endPtrLoop@{ endPtr ->
             val endBlock = blocks[endPtr]
 
@@ -86,8 +84,6 @@ class DiskMap(private val blocks: List<Block>) {
                     while (!endBlock.isEmpty()) {
                         startBlock.push(endBlock.pop())
                     }
-
-//                    println(inspect())
                 }
             }
         }
@@ -98,10 +94,6 @@ class DiskMap(private val blocks: List<Block>) {
             .flatMap(Block::value)
             .mapIndexed { index, value -> index.toLong() * value }
             .sum()
-    }
-
-    fun inspect(): String {
-        return blocks.map(Block::inspect).joinToString("")
     }
 }
 
@@ -125,10 +117,4 @@ data class Block(val length: Int, val values: MutableList<Int> = mutableListOf()
     }
 
     fun fitsIn(other: Block) = length <= other.freeSpace()
-
-    fun inspect(): String {
-        val str = values.joinToString("")
-
-        return str + ".".repeat(freeSpace())
-    }
 }
