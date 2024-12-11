@@ -4,7 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Day10Test {
-    private val input = """
+    private val input =
+        """
         89010123
         78121874
         87430965
@@ -13,7 +14,7 @@ class Day10Test {
         32019012
         01329801
         10456732
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun part1Example() {

@@ -16,11 +16,12 @@ class Day10(private val input: String) : Day {
     }
 
     private fun parseInput(): TopographicMap {
-        val map = input
-            .lines()
-            .filter(String::isNotBlank)
-            .map(String::toCharArray)
-            .map { row -> row.map(Character::getNumericValue) }
+        val map =
+            input
+                .lines()
+                .filter(String::isNotBlank)
+                .map(String::toCharArray)
+                .map { row -> row.map(Character::getNumericValue) }
 
         return TopographicMap(map)
     }
@@ -57,40 +58,38 @@ class TopographicMap(private val map: List<List<Int>>) {
 
     private fun countReachableSummitsFrom(position: Position): Set<Position> {
         val currentAltitude = altitudeOf(position)
-        val nextAltitude = currentAltitude + 1
+        val paths = nextPositionsFrom(position)
 
-        val paths = position
-            .getSurroundingPositions()
-            .filter(::isValidPosition)
-            .filter { altitudeOf(it) == nextAltitude }
-            .toSet()
-
-        if (nextAltitude == SUMMIT_ALTITUDE) return paths
+        if (currentAltitude == SUMMIT_ALTITUDE - 1) return paths
 
         return paths.fold(emptySet()) { acc, nextPosition -> acc + countReachableSummitsFrom(nextPosition) }
     }
 
     private fun countPathToSummitsFrom(position: Position): Int {
         val currentAltitude = altitudeOf(position)
-        val nextAltitude = currentAltitude + 1
+        val paths = nextPositionsFrom(position)
 
-        val paths = position
-            .getSurroundingPositions()
-            .filter(::isValidPosition)
-            .filter { altitudeOf(it) == nextAltitude }
-            .toSet()
-
-        if (nextAltitude == SUMMIT_ALTITUDE) return paths.count()
+        if (currentAltitude == SUMMIT_ALTITUDE - 1) return paths.count()
 
         return paths.sumOf(::countPathToSummitsFrom)
     }
 
-    private fun isValidPosition(position: Position) =
-        position.x in 0 until width() && position.y in 0 until height()
+    private fun nextPositionsFrom(position: Position): Set<Position> {
+        val currentAltitude = altitudeOf(position)
+
+        return position
+            .getSurroundingPositions()
+            .filter(::isValidPosition)
+            .filter { altitudeOf(it) == currentAltitude + 1 }
+            .toSet()
+    }
+
+    private fun isValidPosition(position: Position) = position.x in 0 until width() && position.y in 0 until height()
 
     private fun altitudeOf(position: Position) = map[position.y][position.x]
 
     private fun height() = map.size
+
     private fun width() = map.first().size
 
     private companion object {
@@ -105,7 +104,7 @@ data class Position(val x: Int, val y: Int) {
             Position(x - 1, y),
             Position(x + 1, y),
             Position(x, y - 1),
-            Position(x, y + 1)
+            Position(x, y + 1),
         )
     }
 }
