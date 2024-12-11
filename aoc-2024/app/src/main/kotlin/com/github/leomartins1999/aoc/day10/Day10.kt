@@ -9,6 +9,12 @@ class Day10(private val input: String) : Day {
         return map.trailheadScores().sum()
     }
 
+    override fun part2(): Any {
+        val map = parseInput()
+
+        return map.trailheadRatings().sum()
+    }
+
     private fun parseInput(): TopographicMap {
         val map = input
             .lines()
@@ -27,6 +33,12 @@ class TopographicMap(private val map: List<List<Int>>) {
         return trailheads
             .map(::countReachableSummitsFrom)
             .map(Set<Position>::count)
+    }
+
+    fun trailheadRatings(): List<Int> {
+        val trailheads = getTrailheads()
+
+        return trailheads.map(::countPathToSummitsFrom)
     }
 
     private fun getTrailheads(): Set<Position> {
@@ -56,6 +68,21 @@ class TopographicMap(private val map: List<List<Int>>) {
         if (nextAltitude == SUMMIT_ALTITUDE) return paths
 
         return paths.fold(emptySet()) { acc, nextPosition -> acc + countReachableSummitsFrom(nextPosition) }
+    }
+
+    private fun countPathToSummitsFrom(position: Position): Int {
+        val currentAltitude = altitudeOf(position)
+        val nextAltitude = currentAltitude + 1
+
+        val paths = position
+            .getSurroundingPositions()
+            .filter(::isValidPosition)
+            .filter { altitudeOf(it) == nextAltitude }
+            .toSet()
+
+        if (nextAltitude == SUMMIT_ALTITUDE) return paths.count()
+
+        return paths.sumOf(::countPathToSummitsFrom)
     }
 
     private fun isValidPosition(position: Position) =
