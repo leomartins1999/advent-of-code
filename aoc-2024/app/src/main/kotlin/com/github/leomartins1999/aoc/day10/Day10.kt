@@ -25,7 +25,7 @@ class TopographicMap(private val map: List<List<Int>>) {
         val trailheads = getTrailheads()
 
         return trailheads
-            .map(::hike)
+            .map(::countReachableSummitsFrom)
             .map(Set<Position>::count)
     }
 
@@ -43,7 +43,8 @@ class TopographicMap(private val map: List<List<Int>>) {
         return trailheads
     }
 
-    private fun hike(position: Position, currentAltitude: Int = TRAILHEAD_ALTITUDE): Set<Position> {
+    private fun countReachableSummitsFrom(position: Position): Set<Position> {
+        val currentAltitude = altitudeOf(position)
         val nextAltitude = currentAltitude + 1
 
         val paths = position
@@ -54,7 +55,7 @@ class TopographicMap(private val map: List<List<Int>>) {
 
         if (nextAltitude == SUMMIT_ALTITUDE) return paths
 
-        return paths.fold(emptySet()) { acc, nextPosition -> acc + hike(nextPosition, nextAltitude) }
+        return paths.fold(emptySet()) { acc, nextPosition -> acc + countReachableSummitsFrom(nextPosition) }
     }
 
     private fun isValidPosition(position: Position) =
