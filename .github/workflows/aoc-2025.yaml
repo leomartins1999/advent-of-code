@@ -19,10 +19,10 @@ jobs:
         with:
           go-version: "1.24"
       - name: Install dependencies
-        run: go mod tidy
+        run: make install
       - name: Run linter
-        run: go fmt ./... && go vet ./...
+        run: make format
       - name: Run tests
-        run: go test -v ./...
+        run: make test
       - name: Build
-        run: go build
+        run: make build

@@ -3,6 +3,7 @@ package main
 import (
 	Day1 "aoc-2025/day1"
 	Day2 "aoc-2025/day2"
+	Day3 "aoc-2025/day3"
 	"log"
 )
 
@@ -15,6 +16,7 @@ func main() {
 	days := []Day{
 		&Day1.Day1{InputFilePath: "./input/day-1.txt"},
 		&Day2.Day2{InputFilePath: "./input/day-2.txt"},
+		&Day3.Day3{InputFilePath: "./input/day-3.txt"},
 	}
 
 	log.Printf("Advent of Code 2025 Solutions")
