@@ -6,7 +6,7 @@ import (
 )
 
 func GetLinesFromFile(filePath string) []string {
-	data, err := os.ReadFile(filePath	)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
