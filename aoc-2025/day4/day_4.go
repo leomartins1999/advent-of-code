@@ -72,10 +72,7 @@ func (g Grid) isAccessible(x, y int) bool {
 
 func (g *Grid) removeRollsOfPaper(positions [][2]int) {
 	for _, pos := range positions {
-		x, y := pos[0], pos[1]
-		if g.isValidPosition(x, y) && g.isRollOfPaper(x, y) {
-			g.Cells[y][x] = Empty
-		}
+		g.Cells[pos[1]][pos[0]] = Empty
 	}
 }
 
