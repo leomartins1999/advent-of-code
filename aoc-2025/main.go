@@ -6,7 +6,7 @@ import (
 	Day3 "aoc-2025/day3"
 	Day4 "aoc-2025/day4"
 	Day5 "aoc-2025/day5"
-	"log"
+	Utils "aoc-2025/utils"
 )
 
 type Day interface {
@@ -23,9 +23,9 @@ func main() {
 		&Day5.Day5{InputFilePath: "./input/day-5.txt"},
 	}
 
-	log.Printf("Advent of Code 2025 Solutions")
+	Utils.Logger().Info("Advent of Code 2025 Solutions")
 	for i, day := range days {
-		log.Printf("Day %d - Part 1: %v", i+1, day.SolvePart1())
-		log.Printf("Day %d - Part 2: %v", i+1, day.SolvePart2())
+		Utils.Logger().Info("Day %d - Part 1: %v", i+1, day.SolvePart1())
+		Utils.Logger().Info("Day %d - Part 2: %v", i+1, day.SolvePart2())
 	}
 }

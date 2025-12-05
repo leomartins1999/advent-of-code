@@ -1,6 +1,7 @@
 package Day2
 
 import (
+	Utils "aoc-2025/utils"
 	"bufio"
 	"os"
 	"strconv"
@@ -54,7 +55,7 @@ func (r IDRange) getMatchingIDs(f func(int) bool) []int {
 		}
 	}
 
-	// log.Printf("Found %v matching IDs in range %d-%d", invalidIDs, r.Start, r.End)
+	Utils.Logger().Debug("Found %v matching IDs in range %d-%d", invalidIDs, r.Start, r.End)
 
 	return invalidIDs
 }

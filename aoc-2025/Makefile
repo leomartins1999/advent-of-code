@@ -2,7 +2,7 @@ install:
 	go mod tidy
 
 test:
-	go test ./...
+	LOG_LEVEL=DEBUG go test ./...
 
 run:
 	go run .

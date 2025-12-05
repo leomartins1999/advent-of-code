@@ -13,8 +13,8 @@ type IngredientIDRange struct{ Start, End int }
 func (d *Day5) SolvePart1() any {
 	ranges, ids := parseInput(d.InputFilePath)
 
-	// log.Printf("Parsed Ranges: %+v", ranges)
-	// log.Printf("Parsed IDs: %+v", ids)
+	Utils.Logger().Debug("Parsed Ranges: %+v", ranges)
+	Utils.Logger().Debug("Parsed IDs: %+v", ids)
 
 	cnt := 0
 	for _, id := range ids {
@@ -54,7 +54,7 @@ func reduceRanges(ranges []IngredientIDRange) []IngredientIDRange {
 		for idx, mergedRange := range result {
 			if r.OverlapsWith(mergedRange) {
 				newMergedRange := r.MergeWith(mergedRange)
-				// log.Printf("Merging range %+v with %+v to %+v", r, mergedRange, newMergedRange)
+				Utils.Logger().Debug("Merging range %+v with %+v to %+v", r, mergedRange, newMergedRange)
 				result[idx] = newMergedRange
 				merged = true
 				break
@@ -62,7 +62,7 @@ func reduceRanges(ranges []IngredientIDRange) []IngredientIDRange {
 		}
 
 		if !merged {
-			// log.Printf("Adding new range %+v", r)
+			Utils.Logger().Debug("Adding new range %+v", r)
 			result = append(result, r)
 		}
 	}
@@ -75,7 +75,7 @@ func countIngredientsInRanges(ranges []IngredientIDRange) int {
 
 	for _, r := range ranges {
 		nIngredients := r.End - r.Start + 1
-		// log.Printf("Range %+v has %d ingredients", r, nIngredients)
+		Utils.Logger().Debug("Range %+v has %d ingredients", r, nIngredients)
 		total += nIngredients
 	}
 

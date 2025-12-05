@@ -1,6 +1,7 @@
 package Day3
 
 import (
+	Utils "aoc-2025/utils"
 	"bufio"
 	"os"
 	"strconv"
@@ -16,7 +17,7 @@ func (d *Day3) SolvePart1() any {
 	sum := 0
 	for _, bank := range batteryBanks {
 		largestValue := bank.largestJoltage(2)
-		// log.Printf("Largest joltage pair in bank %v is %d", bank.JoltageValues, largestValue)
+		Utils.Logger().Debug("Largest joltage pair in bank %v is %d", bank.JoltageValues, largestValue)
 		sum += largestValue
 	}
 
@@ -29,7 +30,7 @@ func (d *Day3) SolvePart2() any {
 	sum := 0
 	for _, bank := range batteryBanks {
 		largestValue := bank.largestJoltage(12)
-		//log.Printf("Largest joltage 12th set in bank %v is %d", bank.JoltageValues, largestValue)
+		Utils.Logger().Debug("Largest joltage 12th set in bank %v is %d", bank.JoltageValues, largestValue)
 		sum += largestValue
 	}
 
@@ -41,18 +42,18 @@ func (b BatteryBank) largestJoltage(n int) int {
 	sum := 0
 
 	for batteriesEnabled := range n {
-		// log.Printf("Current sum: %d", sum)
-		// log.Printf("Batteries enabled: %d", batteriesEnabled)
-		// log.Printf("Remaining batteries: %v", batteries)
+		Utils.Logger().Debug("Current sum: %d", sum)
+		Utils.Logger().Debug("Batteries enabled: %d", batteriesEnabled)
+		Utils.Logger().Debug("Remaining batteries: %v", batteries)
 
 		lastIndexToConsider := len(batteries) - (n - batteriesEnabled) + 1
 		toSearch := batteries[:lastIndexToConsider]
 
-		// log.Printf("Searching max in: %v", toSearch)
+		Utils.Logger().Debug("Searching max in: %v", toSearch)
 
 		value, index := findMax(toSearch)
 
-		// log.Printf("Found max value %d at index %d", value, index)
+		Utils.Logger().Debug("Found max value %d at index %d", value, index)
 
 		sum *= 10
 		sum += value

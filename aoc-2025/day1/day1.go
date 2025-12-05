@@ -1,6 +1,7 @@
 package Day1
 
 import (
+	Utils "aoc-2025/utils"
 	"bufio"
 	"os"
 	"strconv"
@@ -42,7 +43,7 @@ func (d *Day1) SolvePart2() any {
 }
 
 func (d *Dial) Move(instruction Instruction) {
-	// log.Printf("Moving %s %d from %d", instruction.Direction, instruction.Times, d.Location)
+	Utils.Logger().Debug("Moving %s %d from %d", instruction.Direction, instruction.Times, d.Location)
 
 	switch instruction.Direction {
 	case "L":
@@ -67,7 +68,7 @@ func (d *Dial) Move(instruction Instruction) {
 		d.ExactZeroCounter++
 	}
 
-	// log.Printf("New location: %d", d.Location)
+	Utils.Logger().Debug("New location: %d", d.Location)
 }
 
 func parseInput(filePath string) []Instruction {
