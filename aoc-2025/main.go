@@ -7,6 +7,7 @@ import (
 	Day4 "aoc-2025/day4"
 	Day5 "aoc-2025/day5"
 	Day6 "aoc-2025/day6"
+	Day7 "aoc-2025/day7"
 	Utils "aoc-2025/utils"
 	"time"
 )
@@ -24,6 +25,7 @@ func main() {
 		&Day4.Day4{InputFilePath: "./input/day-4.txt"},
 		&Day5.Day5{InputFilePath: "./input/day-5.txt"},
 		&Day6.Day6{InputFilePath: "./input/day-6.txt"},
+		&Day7.Day7{InputFilePath: "./input/day-7.txt"},
 	}
 
 	Utils.Logger().Info("Advent of Code 2025 Solutions")
