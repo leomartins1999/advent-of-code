@@ -8,56 +8,68 @@ import (
 type Day7 struct{ InputFilePath string }
 
 type TachionManifold struct {
-	Grid Utils.Grid
+	grid      Utils.Grid
+	splitters map[string]bool
+	visited   map[string]bool
 }
 
-type Problem struct {
-	Values   []int
-	Operator rune
-}
+const (
+	OutOfBounds = "out-of-bounds"
+	Noop        = "noop"
+)
 
 func (d *Day7) SolvePart1() any {
 	tachion := parseInput(d.InputFilePath)
+	tachion.simulate()
 
-	return tachion.simulate()
+	return len(tachion.splitters)
 }
 
 func (d *Day7) SolvePart2() any {
 	return "TODO"
 }
 
-func (t *TachionManifold) simulate() int {
-	found, x, y := t.Grid.Find('S')
+func (t *TachionManifold) simulate() {
+	found, x, y := t.grid.Find('S')
 	if !found {
 		panic("Start point 'S' not found in the grid")
 	}
 
-	return t.run(x, y)
+	t.run(x, y)
 }
 
-// TODO: change to use set to deduplicate visited positions
-func (t *TachionManifold) run(x, y int) int {
-	Utils.Logger().Debug("At position (%d, %d)", x, y)
+func (t *TachionManifold) run(x, y int) {
+	key := fmt.Sprintf("(%d,%d)", x, y)
 
-	if t.Grid.IsOutOfBounds(x, y) {
-		return 0
+	if t.visited[key] {
+		return
 	}
 
-	nextCell := t.Grid.Get(x, y)
-	switch nextCell {
+	t.visited[key] = true
+
+	if t.grid.IsOutOfBounds(x, y) {
+		return
+	}
+
+	currentCell := t.grid.Get(x, y)
+	switch currentCell {
 	case 'S':
-		return t.run(x, y+1)
+		Utils.Logger().Debug("Starting point found at %s", key)
+		t.run(x, y+1)
 	case '.':
-		return 1 + t.run(x, y+1)
+		Utils.Logger().Debug("Empty cell at %s", key)
+		t.run(x, y+1)
 	case '^':
-		return t.run(x-1, y) + t.run(x+1, y)
+		Utils.Logger().Debug("Splitter at %s", key)
+		t.splitters[key] = true
+		t.run(x-1, y)
+		t.run(x+1, y)
 	default:
-		panic(fmt.Sprintf("Encountered unhandled cell %s", string(nextCell)))
+		panic(fmt.Sprintf("Encountered unhandled cell %s", string(currentCell)))
 	}
 }
-
 func parseInput(filePath string) TachionManifold {
 	grid := Utils.GridFromFile(filePath)
 
-	return TachionManifold{Grid: grid}
+	return TachionManifold{grid: grid, splitters: make(map[string]bool), visited: make(map[string]bool)}
 }
