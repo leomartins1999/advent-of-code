@@ -17,6 +17,11 @@ type Day8 struct {
 
 type JunctionBox struct{ x, y, z int }
 
+type CandidatePair struct {
+	box1, box2 JunctionBox
+	distance   float64
+}
+
 type Circuit struct {
 	boxes []JunctionBox
 }
@@ -63,7 +68,7 @@ func connect(boxes []JunctionBox, nrConnections int) []*Circuit {
 	for _, pair := range closestBoxPairs {
 		Utils.Logger().Debug("Processing pair: %v", pair)
 
-		box1, box2 := pair[0], pair[1]
+		box1, box2 := pair.box1, pair.box2
 
 		box1Found, box1Circuit := anyCircuitContainsBox(circuits, box1)
 		box2Found, box2Circuit := anyCircuitContainsBox(circuits, box2)
@@ -102,28 +107,22 @@ func connect(boxes []JunctionBox, nrConnections int) []*Circuit {
 	return Utils.MapSetToSlice(circuits)
 }
 
-func getClosestBoxPairs(boxes []JunctionBox, nrConnections int) [][2]JunctionBox {
-	pairs := [][2]JunctionBox{}
+func getClosestBoxPairs(boxes []JunctionBox, nrConnections int) []CandidatePair {
+	pairs := []CandidatePair{}
 
-	for i := 0; i < nrConnections; i++ {
-		var closestPair [2]JunctionBox
-		min := math.MaxFloat64
+	for i, box1 := range boxes {
+		for _, box2 := range boxes[i+1:] {
+			distance := box1.distance(box2)
 
-		for i, box1 := range boxes {
-			for _, box2 := range boxes[i+1:] {
-				candidatePair := [2]JunctionBox{box1, box2}
-				distance := box1.distance(box2)
-				if distance < min && !slices.Contains(pairs, candidatePair) {
-					min = distance
-					closestPair = candidatePair
-				}
-			}
+			pairs = append(pairs, CandidatePair{box1: box1, box2: box2, distance: distance})
 		}
-
-		pairs = append(pairs, closestPair)
 	}
 
-	return pairs
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].distance < pairs[j].distance
+	})
+
+	return pairs[:nrConnections]
 }
 
 func anyCircuitContainsBox(circuits map[*Circuit]bool, box JunctionBox) (bool, *Circuit) {

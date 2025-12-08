@@ -7,6 +7,9 @@ test:
 run:
 	go run .
 
+prof:
+	go run . && go tool pprof -http=":8080" run.prof
+
 build:
 	go build .
 
