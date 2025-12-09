@@ -30,7 +30,7 @@ func (d *Day8) SolvePart1() any {
 	boxes := parseInput(d.InputFilePath)
 	Utils.Logger().Debug("Parsed %d junction boxes", len(boxes))
 
-	circuits := connect(boxes, d.NrConnections)
+	circuits, _ := connect(boxes, d.NrConnections)
 
 	largestCircuits := getLargestCircuits(circuits, d.NrLargestCircuits)
 
@@ -45,7 +45,7 @@ func (d *Day8) SolvePart1() any {
 func (d *Day8) SolvePart2() any {
 	boxes := parseInput(d.InputFilePath)
 
-	lastPair := connectAll(boxes)
+	_, lastPair := connect(boxes, -1)
 
 	return lastPair.box1.x * lastPair.box2.x
 }
@@ -63,49 +63,30 @@ func (c *Circuit) merge(other *Circuit) *Circuit {
 	return &Circuit{boxes: mergedBoxes}
 }
 
-func connect(boxes []JunctionBox, nrConnections int) []*Circuit {
-	circuits := map[*Circuit]bool{}
-
-	closestBoxPairs := getClosestBoxPairs(boxes, nrConnections)
-	Utils.Logger().Debug("Closest box pairs: %v", closestBoxPairs)
-
-	for _, pair := range closestBoxPairs {
-		Utils.Logger().Debug("Processing pair: %v", pair)
-
-		connectBoxes(circuits, pair.box1, pair.box2)
-	}
-
-	for _, box := range boxes {
-		boxFound, _ := anyCircuitContainsBox(circuits, box)
-		if !boxFound {
-			Utils.Logger().Debug("Creating new circuit with single box: %v", box)
-			newCircuit := &Circuit{boxes: []JunctionBox{box}}
-			circuits[newCircuit] = true
-		}
-	}
-
-	return Utils.MapSetToSlice(circuits)
-}
-
-func connectAll(boxes []JunctionBox) CandidatePair {
+func connect(boxes []JunctionBox, nrConnections int) ([]*Circuit, CandidatePair) {
 	circuits := map[*Circuit]bool{}
 	for _, box := range boxes {
 		newCircuit := &Circuit{boxes: []JunctionBox{box}}
 		circuits[newCircuit] = true
 	}
 
-	closestBoxPairs := getClosestBoxPairs(boxes, -1)
+	closestBoxPairs := getClosestBoxPairs(boxes, nrConnections)
+	Utils.Logger().Debug("Closest box pairs: %v", closestBoxPairs)
 
+	var lastPair CandidatePair
 	for _, pair := range closestBoxPairs {
+		Utils.Logger().Debug("Processing pair: %v", pair)
+		lastPair = pair
+
 		connectBoxes(circuits, pair.box1, pair.box2)
 
-		if len(circuits) == 1 {
+		if nrConnections == -1 && len(circuits) == 1 {
 			Utils.Logger().Debug("All boxes connected into a single circuit")
-			return pair
+			break
 		}
 	}
 
-	panic("Could not connect all boxes into a single circuit")
+	return Utils.MapSetToSlice(circuits), lastPair
 }
 
 func connectBoxes(circuits map[*Circuit]bool, box1, box2 JunctionBox) {
