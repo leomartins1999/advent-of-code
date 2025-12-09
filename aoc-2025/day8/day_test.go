@@ -16,5 +16,5 @@ func Test_SolvePart1(t *testing.T) {
 func Test_SolvePart2(t *testing.T) {
 	day := &Day8.Day8{InputFilePath: "./day-test.txt", NrConnections: 10, NrLargestCircuits: 3}
 
-	assert.Equal(t, "TODO", day.SolvePart2())
+	assert.Equal(t, 25272, day.SolvePart2())
 }

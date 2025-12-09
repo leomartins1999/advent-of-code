@@ -15,3 +15,5 @@ build:
 
 format:
 	go fmt ./... && go vet ./...
+
+all: format test run build

@@ -43,7 +43,11 @@ func (d *Day8) SolvePart1() any {
 }
 
 func (d *Day8) SolvePart2() any {
-	return "TODO"
+	boxes := parseInput(d.InputFilePath)
+
+	lastPair := connectAll(boxes)
+
+	return lastPair.box1.x * lastPair.box2.x
 }
 
 func (b *JunctionBox) distance(other JunctionBox) float64 {
@@ -68,31 +72,7 @@ func connect(boxes []JunctionBox, nrConnections int) []*Circuit {
 	for _, pair := range closestBoxPairs {
 		Utils.Logger().Debug("Processing pair: %v", pair)
 
-		box1, box2 := pair.box1, pair.box2
-
-		box1Found, box1Circuit := anyCircuitContainsBox(circuits, box1)
-		box2Found, box2Circuit := anyCircuitContainsBox(circuits, box2)
-
-		if box1Found && box2Found && (box1Circuit == box2Circuit) {
-			Utils.Logger().Debug("Both boxes are already in the same circuit: %v", box1Circuit)
-			continue
-		} else if box1Found && box2Found {
-			Utils.Logger().Debug("Merging circuits: %v and %v", box1Circuit, box2Circuit)
-			superCircuit := box1Circuit.merge(box2Circuit)
-			delete(circuits, box1Circuit)
-			delete(circuits, box2Circuit)
-			circuits[superCircuit] = true
-		} else if box1Found {
-			Utils.Logger().Debug("Adding box2 to box1's circuit: %v", box1Circuit)
-			box1Circuit.boxes = append(box1Circuit.boxes, box2)
-		} else if box2Found {
-			Utils.Logger().Debug("Adding box1 to box2's circuit: %v", box2Circuit)
-			box2Circuit.boxes = append(box2Circuit.boxes, box1)
-		} else {
-			Utils.Logger().Debug("Creating new circuit with boxes: %v and %v", box1, box2)
-			newCircuit := &Circuit{boxes: []JunctionBox{box1, box2}}
-			circuits[newCircuit] = true
-		}
+		connectBoxes(circuits, pair.box1, pair.box2)
 	}
 
 	for _, box := range boxes {
@@ -105,6 +85,52 @@ func connect(boxes []JunctionBox, nrConnections int) []*Circuit {
 	}
 
 	return Utils.MapSetToSlice(circuits)
+}
+
+func connectAll(boxes []JunctionBox) CandidatePair {
+	circuits := map[*Circuit]bool{}
+	for _, box := range boxes {
+		newCircuit := &Circuit{boxes: []JunctionBox{box}}
+		circuits[newCircuit] = true
+	}
+
+	closestBoxPairs := getClosestBoxPairs(boxes, -1)
+
+	for _, pair := range closestBoxPairs {
+		connectBoxes(circuits, pair.box1, pair.box2)
+
+		if len(circuits) == 1 {
+			Utils.Logger().Debug("All boxes connected into a single circuit")
+			return pair
+		}
+	}
+
+	panic("Could not connect all boxes into a single circuit")
+}
+
+func connectBoxes(circuits map[*Circuit]bool, box1, box2 JunctionBox) {
+	box1Found, box1Circuit := anyCircuitContainsBox(circuits, box1)
+	box2Found, box2Circuit := anyCircuitContainsBox(circuits, box2)
+
+	if box1Found && box2Found && (box1Circuit == box2Circuit) {
+		Utils.Logger().Debug("Both boxes are already in the same circuit: %v", box1Circuit)
+	} else if box1Found && box2Found {
+		Utils.Logger().Debug("Merging circuits: %v and %v", box1Circuit, box2Circuit)
+		superCircuit := box1Circuit.merge(box2Circuit)
+		delete(circuits, box1Circuit)
+		delete(circuits, box2Circuit)
+		circuits[superCircuit] = true
+	} else if box1Found {
+		Utils.Logger().Debug("Adding box2 to box1's circuit: %v", box1Circuit)
+		box1Circuit.boxes = append(box1Circuit.boxes, box2)
+	} else if box2Found {
+		Utils.Logger().Debug("Adding box1 to box2's circuit: %v", box2Circuit)
+		box2Circuit.boxes = append(box2Circuit.boxes, box1)
+	} else {
+		Utils.Logger().Debug("Creating new circuit with boxes: %v and %v", box1, box2)
+		newCircuit := &Circuit{boxes: []JunctionBox{box1, box2}}
+		circuits[newCircuit] = true
+	}
 }
 
 func getClosestBoxPairs(boxes []JunctionBox, nrConnections int) []CandidatePair {
@@ -121,6 +147,10 @@ func getClosestBoxPairs(boxes []JunctionBox, nrConnections int) []CandidatePair 
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].distance < pairs[j].distance
 	})
+
+	if nrConnections == -1 {
+		return pairs
+	}
 
 	return pairs[:nrConnections]
 }
